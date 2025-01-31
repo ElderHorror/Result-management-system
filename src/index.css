@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://db.onlinewebfonts.com/c/5520b2b875202fac53dc536bc7aca367?family=Futura+LT+W04+Light');
+
+              
+
+.text{
+    font-family: "Futura LT W04 Light";
+    font-size:19px;
+}
+#vv{
+    font-family: "Futura LT W04 Light"; 
+}
+#ee{
+    font-family: 'Futura';
+}
+@font-face {
+    font-family: "Futura LT W04 Light";
+    src: url("https://db.onlinewebfonts.com/t/5520b2b875202fac53dc536bc7aca367.eot");
+    src: url("https://db.onlinewebfonts.com/t/5520b2b875202fac53dc536bc7aca367.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/5520b2b875202fac53dc536bc7aca367.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/5520b2b875202fac53dc536bc7aca367.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/5520b2b875202fac53dc536bc7aca367.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/5520b2b875202fac53dc536bc7aca367.svg#Futura LT W04 Light")format("svg");
+}
