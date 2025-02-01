@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function StudentLevels({ data, title, count }) {
   return (
-    <div className="flex h-{80%} bg-gray-200 px-4 sm:px-6 lg:px-8">
+    <div className="flex h-{80%} bg-gray-200 px-4 sm:px-10 lg:px-8">
       <div className="w-full min-w-{100%} p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">{title}</h2>
         <table className="w-full border-collapse border border-gray-300">
