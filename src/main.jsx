@@ -10,6 +10,8 @@ import StudentApp from "./StudentPage";
 import CourseApp from "./CoursePage";
 import ResultApp from "./ResultPage";
 import LevelApp from "./LevelPage";
+import { db } from '../firebaseConfig';
+import { collection, getDocs } from "firebase/firestore";
 const router = createBrowserRouter([
   {
     path: "/",
