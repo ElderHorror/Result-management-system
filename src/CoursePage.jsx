@@ -26,7 +26,7 @@ const CourseApp = () => {
               <IoIosArrowForward size={23} className="pt-1" />
               Admin
             </Link>
-            <Link to="/student" className="flex flex-row gap-1 text-purple-700">
+            <Link to="/course" className="flex flex-row gap-1 text-purple-700">
               <IoIosArrowForward size={23} className="pt-1" />
               Student Courses
             </Link>

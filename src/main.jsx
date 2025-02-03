@@ -5,11 +5,12 @@ import App from "./App";
 import "./index.css";
 import LoginPage from "./LoginPage";
 import NotFoundPage from "./NotFoundPage";
-import StudentLevels from "./Sections/SchoolLevel";
+
 import StudentApp from "./StudentPage";
 import CourseApp from "./CoursePage";
 import ResultApp from "./ResultPage";
 import LevelApp from "./LevelPage";
+import View from "./View";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
   path: "/level",
   element: <LevelApp />,
+  },
+  {
+  path: "/view",
+  element: <View />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(

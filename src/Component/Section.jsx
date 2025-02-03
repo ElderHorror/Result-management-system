@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 const Section = () => {
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-2 gap-4 md:gap-8 mx-4 mx-8 md:mx-10  md:pt-0">
+    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-2 gap-4 md:gap-8 mx-4 mx-8 md:ml-10  md:pt-0 ">
       
       <Link to="/student" className="bg-white shadow p-4 flex items-center h-28">
         <div className="bg-blue-300 rounded-full p-3">

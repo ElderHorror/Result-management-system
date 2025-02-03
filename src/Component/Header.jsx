@@ -5,7 +5,7 @@ import { IoSettingsSharp } from "react-icons/io5";
 const Header = () => {
   return (
     <header className="bg-white shadow p-4 w-full flex flex-col md:flex-row justify-between items-center px-4 md:px-10 
-      fixed md:relative top-0 left-0 z-50 md:static">
+      fixed md:relative top-0 left-0 z-30 md:static">
       
       <img src="/chrisland logo.svg" alt="Chrisland University Logo" className="h-12 w-auto" />
       
