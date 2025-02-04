@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 const App = () => {
   return (
     <div>
-      <div className="flex h-full md:h-screen bg-gray-200 font-poppins">
+      <div className="flex sm:h-screen  md:h-screen bg-gray-200 font-poppins ">
         <SideBar />
 
         <main className="flex-1 flex flex-col ">

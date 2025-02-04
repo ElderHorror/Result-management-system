@@ -5,9 +5,7 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        futura: ['"Futura Std"', 'sans-serif'],
-      },
+
     },
   },
   plugins: [],
