@@ -31,7 +31,7 @@ const ResultApp = () => {
               Student Result
             </Link>
           </div>
-          <StudentLevels data={studentData} title="Student Result"  count="Number of Student Results"/>
+          <StudentLevels data={studentData} title="Student Result"  count="Number of Student Results" view="/ResultView"/>
         </main>
       </div>
     </div>

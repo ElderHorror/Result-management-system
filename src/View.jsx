@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import SideBar from "./Component/SideBar";
 import Header from "./Component/Header";
 import { IoIosArrowForward } from "react-icons/io";
@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import StudentView from "./Sections/SchoolView"; // Import the modified StudentView component
 
 // Sample student data with the required fields
-const studentData = [
+const initialStudentData = [
   {
     matricNo: "swe/2021/001",
     name: "Chinedu Okoro",
@@ -37,7 +37,53 @@ const studentData = [
   // Add more student data as needed
 ];
 
+// Define the column configuration
+const columns = [
+  { header: "Matric No", key: "matricNo" },
+  { header: "Name", key: "name" },
+  { header: "Department", key: "department" },
+  { header: "CGPA", key: "cgpa" },
+  {
+    header: "Suspended",
+    key: "suspended",
+    format: (value) => (
+      <span className={value === "YES" ? "text-green-600" : "text-red-600"}>
+        {value}
+      </span>
+    ),
+  },
+  { header: "Year of Entry", key: "yearOfEntry" },
+  { header: "Mode of Entry", key: "modeOfEntry" },
+  {
+    header: "Action",
+    key: "action",
+    render: (item, handleEdit) => (
+      <button
+        className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        onClick={() => handleEdit(item)} // Pass the item to the handleEdit function
+      >
+        Edit
+      </button>
+    ),
+  },
+];
+
 const View = () => {
+  const [studentData, setStudentData] = useState(initialStudentData);
+
+  // Function to handle adding a new student
+  const onAdd = (newStudent) => {
+    setStudentData([...studentData, newStudent]); // Add the new student to the data
+  };
+
+  // Function to handle editing a student
+  const onEdit = (updatedStudent) => {
+    const updatedData = studentData.map((student) =>
+      student.matricNo === updatedStudent.matricNo ? updatedStudent : student
+    );
+    setStudentData(updatedData); // Update the student data
+  };
+
   return (
     <div>
       <div className="flex h-screen bg-gray-200 font-poppins">
@@ -58,11 +104,14 @@ const View = () => {
               Student Courses
             </Link>
           </div>
-          {/* Use the StudentView component with the updated student data */}
+          {/* Use the StudentView component with the updated student data and columns */}
           <StudentView
             data={studentData}
+            columns={columns}
             title="Student Details"
             count="Number of Students"
+            onAdd={onAdd} // Pass the onAdd function as a prop
+            onEdit={onEdit} // Pass the onEdit function as a prop
           />
         </main>
       </div>

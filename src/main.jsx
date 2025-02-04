@@ -9,8 +9,11 @@ import NotFoundPage from "./NotFoundPage";
 import StudentApp from "./StudentPage";
 import CourseApp from "./CoursePage";
 import ResultApp from "./ResultPage";
-import LevelApp from "./LevelPage";
+import LevelApp from "./Lecturer";
 import View from "./View";
+import CourseView from "./CourseView";
+import ResultView from "./ResultView";
+import LecturerView from "./LecturerView";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -40,6 +43,18 @@ const router = createBrowserRouter([
   {
   path: "/view",
   element: <View />,
+  },
+  {
+    path: "/CourseView",
+    element: <CourseView />,
+  },
+  {
+    path: "/ResultView",
+    element: <ResultView />,
+  },
+  {
+    path: "/LecturerView",
+    element: <LecturerView />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(

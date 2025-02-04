@@ -59,7 +59,7 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
                 onClick={() => toggleDropdown('level')}
               >
                 <SiGoogleclassroom size={20} />
-                <span className="px-4">Level</span>
+                <span className="px-4">Lecturer</span>
                 {openDropdown === 'level' ? (
                   <IoIosArrowDown className="ml-auto" />
                 ) : (
