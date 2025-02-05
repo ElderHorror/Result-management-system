@@ -1,39 +1,77 @@
-import React, { useState } from 'react';
-import { FaPlus, FaSearch } from 'react-icons/fa'; // Import the Plus and Search icons
+import React, { useState, useEffect } from 'react';
+import { FaPlus, FaSearch } from 'react-icons/fa';
+import { db } from '../../firebaseConfig'; // Adjust the import path as needed
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 export default function StudentView({ data, title, count }) {
   const [searchMatric, setSearchMatric] = useState('');
   const [searchName, setSearchName] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
-  const [selectedStudent, setSelectedStudent] = useState(null); // State to store selected row data
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [students, setStudents] = useState([]);
+
+  // Define fixed column names and their display labels
+  const columns = [
+    { key: 'matric_number', label: 'Matric No' },
+    { key: 'name', label: 'Name' },
+    { key: 'department', label: 'Department' },
+    { key: 'cgpa', label: 'CGPA' },
+    { key: 'suspended', label: 'Suspended' },
+    { key: 'yearOfEntry', label: 'Year of Entry' },
+    { key: 'modeOfEntry', label: 'Mode of Entry' },
+  ];
+
+  // Fetch data from Firebase on component mount
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "students"));
+        const fetchedData = querySnapshot.docs.map((doc) => ({
+          id: doc.id, // Include the document ID for editing
+          ...doc.data(),
+        }));
+        setStudents(fetchedData);
+      } catch (err) {
+        console.error("Error fetching data: ", err);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const handleSearchMatric = () => {
-    // Implement search logic for matric number
     console.log('Searching for matric number:', searchMatric);
   };
 
   const handleSearchName = () => {
-    // Implement search logic for student name
     console.log('Searching for student name:', searchName);
   };
 
-  // Function to open the modal and set the selected student data
   const handleEditClick = (student) => {
     setSelectedStudent(student);
     setIsModalOpen(true);
   };
 
-  // Function to close the modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedStudent(null);
   };
 
-  // Function to handle form submission (save changes)
-  const handleSaveChanges = (updatedStudent) => {
-    console.log('Updated Student Data:', updatedStudent);
-    // Here, you can implement logic to update the data in your state or backend
-    setIsModalOpen(false); // Close the modal after saving
+  const handleSaveChanges = async (updatedStudent) => {
+    try {
+      const studentRef = doc(db, "students", updatedStudent.id);
+      await updateDoc(studentRef, updatedStudent);
+      console.log("Student data updated successfully!");
+      setIsModalOpen(false);
+
+      // Update local state to reflect changes
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.id === updatedStudent.id ? updatedStudent : student
+        )
+      );
+    } catch (error) {
+      console.error("Error updating student data: ", error);
+    }
   };
 
   return (
@@ -112,32 +150,26 @@ export default function StudentView({ data, title, count }) {
         <table className="w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border border-gray-300 px-4 py-2">Matric No</th>
-              <th className="border border-gray-300 px-4 py-2">Name</th>
-              <th className="border border-gray-300 px-4 py-2">Department</th>
-              <th className="border border-gray-300 px-4 py-2">CGPA</th>
-              <th className="border border-gray-300 px-4 py-2">Suspended</th>
-              <th className="border border-gray-300 px-4 py-2">Year of Entry</th>
-              <th className="border border-gray-300 px-4 py-2">Mode of Entry</th>
+              {columns.map((column) => (
+                <th key={column.key} className="border border-gray-300 px-4 py-2">
+                  {column.label}
+                </th>
+              ))}
               <th className="border border-gray-300 px-4 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
+            {students.map((item, index) => (
               <tr key={index} className="text-center hover:bg-gray-100">
-                <td className="border border-gray-300 px-4 py-2">{item.matricNo}</td>
-                <td className="border border-gray-300 px-4 py-2">{item.name}</td>
-                <td className="border border-gray-300 px-4 py-2">{item.department}</td>
-                <td className="border border-gray-300 px-4 py-2">{item.cgpa}</td>
-                <td className={`border border-gray-300 px-4 py-2 ${item.suspended === 'YES' ? 'text-green-600' : 'text-red-600'}`}>
-                  {item.suspended}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">{item.yearOfEntry}</td>
-                <td className="border border-gray-300 px-4 py-2">{item.modeOfEntry}</td>
+                {columns.map((column) => (
+                  <td key={column.key} className="border border-gray-300 px-4 py-2">
+                    {item[column.key] || "-"} {/* Display "-" if the field is missing */}
+                  </td>
+                ))}
                 <td className="border border-gray-300 px-4 py-2">
                   <button
                     className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    onClick={() => handleEditClick(item)} // Pass the selected row data
+                    onClick={() => handleEditClick(item)}
                   >
                     Edit
                   </button>
@@ -160,85 +192,34 @@ export default function StudentView({ data, title, count }) {
               }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Matric No</label>
-                  <input
-                    type="text"
-                    value={selectedStudent.matricNo}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, matricNo: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
-                  <input
-                    type="text"
-                    value={selectedStudent.name}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Department</label>
-                  <input
-                    type="text"
-                    value={selectedStudent.department}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, department: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">CGPA</label>
-                  <input
-                    type="text"
-                    value={selectedStudent.cgpa}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, cgpa: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Suspended</label>
-                  <select
-                    value={selectedStudent.suspended}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, suspended: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="YES">YES</option>
-                    <option value="NO">NO</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Year of Entry</label>
-                  <input
-                    type="text"
-                    value={selectedStudent.yearOfEntry}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, yearOfEntry: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Mode of Entry</label>
-                  <input
-                    type="text"
-                    value={selectedStudent.modeOfEntry}
-                    onChange={(e) =>
-                      setSelectedStudent({ ...selectedStudent, modeOfEntry: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
+                {columns.map((column) => (
+                  <div key={column.key}>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {column.label}
+                    </label>
+                    {column.key === "suspended" ? (
+                      <select
+                        value={selectedStudent[column.key] || ""}
+                        onChange={(e) =>
+                          setSelectedStudent({ ...selectedStudent, [column.key]: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        <option value="YES">YES</option>
+                        <option value="NO">NO</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={selectedStudent[column.key] || ""}
+                        onChange={(e) =>
+                          setSelectedStudent({ ...selectedStudent, [column.key]: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
               <div className="mt-6 flex justify-end gap-4">
                 <button
