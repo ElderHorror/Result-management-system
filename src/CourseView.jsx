@@ -4,6 +4,7 @@ import Header from "./Component/Header";
 import { IoIosArrowForward } from "react-icons/io";
 import { Link } from "react-router-dom";
 import StudentView from "./Sections/SchoolView"; // Import the modified StudentView component
+import CourseTable from './Sections/CourseViewTable'
 
 // Sample course data with the required fields
 const courseData = [
@@ -65,39 +66,37 @@ const handleEdit = (updatedCourse) => {
 };
 
 const CourseView = () => {
-  return (
-    <div>
-      <div className="flex h-screen bg-gray-200 font-poppins">
-        <SideBar />
-        <main className="flex-1 flex flex-col overflow-y-auto">
-          <Header />
-          <h1 className="px-10 text-2xl font-medium pt-[170px] md:pt-4">
-            Admin Dashboard
-          </h1>
-          <div className="flex flex-row gap-1 px-10 pt-2 pb-8 text-base text-gray-700">
-            <p>Home</p>
-            <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
-              <IoIosArrowForward size={23} className="pt-1" />
-              Admin
-            </Link>
-            <Link to="/course" className="flex flex-row gap-1 text-purple-700">
-              <IoIosArrowForward size={23} className="pt-1" />
-              Courses
-            </Link>
-          </div>
-          {/* Use the StudentView component with the updated course data and columns */}
-          <StudentView
-            data={courseData}
-            columns={courseColumns}
-            title="Course Details"
-            count="Number of Courses"
-            onAdd={handleAdd} // Pass the Add handler
-            onEdit={handleEdit} // Pass the Edit handler
-          />
-        </main>
+    return (
+      <div>
+        <div className="flex h-screen bg-gray-200 font-poppins">
+          <SideBar />
+          <main className="flex-1 flex flex-col overflow-y-auto">
+            <Header />
+            <h1 className="px-10 text-2xl font-medium pt-[170px] md:pt-4">
+              Admin Dashboard
+            </h1>
+            <div className="flex flex-row gap-1 px-10 pt-2 pb-8 text-base text-gray-700">
+              <p>Home</p>
+              <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
+                <IoIosArrowForward size={23} className="pt-1" />
+                Admin
+              </Link>
+              <Link to="/course" className="flex flex-row gap-1 text-purple-700">
+                <IoIosArrowForward size={23} className="pt-1" />
+                Courses
+              </Link>
+            </div>
+            {/* Use the new CourseTable component */}
+            <CourseTable
+              data={courseData}
+              columns={courseColumns}
+              title="Course Details"
+              onEdit={handleEdit}
+            />
+          </main>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 export default CourseView;

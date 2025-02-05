@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import Modal from "./Modal";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebaseConfig"; // Import Firebase instance
 
 export default function StudentView({ title, onAdd, onEdit }) {
@@ -27,27 +27,22 @@ export default function StudentView({ title, onAdd, onEdit }) {
 
   // Fetch data from Firestore
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const q = query(
-          collection(db, "students"),
-          where("level", "==", selectedLevel),
-          where("department", "==", selectedDepartment)
-        );
-
-        const querySnapshot = await getDocs(q);
-        const studentList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setStudents(studentList);
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      }
-    };
-
-    fetchStudents();
+    const q = query(
+      collection(db, "students"),
+      where("level", "==", selectedLevel),
+      where("department", "==", selectedDepartment),
+      orderBy("matric_number", "asc") // Adjust order field as needed
+    );
+  
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const studentList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setStudents(studentList);
+    });
+  
+    return () => unsubscribe(); // Cleanup on unmount
   }, [selectedLevel, selectedDepartment]);
 
   const handleSearch = () => {
