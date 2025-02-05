@@ -1,12 +1,43 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import SideBar from "./Component/SideBar";
 import Header from "./Component/Header";
 import { IoIosArrowForward } from "react-icons/io";
-import { Link, useLocation } from "react-router-dom";
-import StudentView from "./Sections/SchoolView";
-import { db } from "../firebaseConfig";
-import { collection, getDocs, doc, updateDoc, addDoc } from "firebase/firestore";
+import { Link } from "react-router-dom";
+import StudentView from "./Sections/SchoolView"; // Import the modified StudentView component
 
+// Sample student data with the required fields
+const initialStudentData = [
+  {
+    matricNo: "swe/2021/001",
+    name: "Chinedu Okoro",
+    department: "Software Engineering",
+    cgpa: 4.5,
+    suspended: "NO",
+    yearOfEntry: 2021,
+    modeOfEntry: "Normal",
+  },
+  {
+    matricNo: "csc/2020/045",
+    name: "Aisha Bello",
+    department: "Computer Science",
+    cgpa: 3.8,
+    suspended: "YES",
+    yearOfEntry: 2020,
+    modeOfEntry: "D.E",
+  },
+  {
+    matricNo: "cyb/2022/012",
+    name: "Emeka Nwankwo",
+    department: "Cyber Security",
+    cgpa: 4.2,
+    suspended: "NO",
+    yearOfEntry: 2022,
+    modeOfEntry: "Jupeb",
+  },
+  // Add more student data as needed
+];
+
+// Define the column configuration
 const columns = [
   { header: "Matric No", key: "matricNo" },
   { header: "Name", key: "name" },
@@ -23,84 +54,35 @@ const columns = [
   },
   { header: "Year of Entry", key: "yearOfEntry" },
   { header: "Mode of Entry", key: "modeOfEntry" },
+  {
+    header: "Action",
+    key: "action",
+    render: (item, handleEdit) => (
+      <button
+        className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        onClick={() => handleEdit(item)} // Pass the item to the handleEdit function
+      >
+        Edit
+      </button>
+    ),
+  },
 ];
 
 const View = () => {
-  const location = useLocation();
-  const { source, level } = location.state || {};
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [studentData, setStudentData] = useState(initialStudentData);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let collectionName = "";
-        switch (source) {
-          case "student":
-            collectionName = "students";
-            break;
-          case "course":
-            collectionName = "courses";
-            break;
-          case "result":
-            collectionName = "results";
-            break;
-          default:
-            collectionName = "students";
-        }
-
-        const querySnapshot = await getDocs(collection(db, collectionName));
-        const fetchedData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        if (source === "student" && level) {
-          const filteredData = fetchedData.filter(
-            (item) => item.level.toString() === level
-          );
-          setData(filteredData);
-        } else {
-          setData(fetchedData);
-        }
-
-        setLoading(false);
-      } catch (err) {
-        setError("Error fetching data");
-        console.error("Error fetching data: ", err);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [source, level]);
-
-  const handleAdd = async (newItem) => {
-    try {
-      const collectionName = source === "student" ? "students" : source === "course" ? "courses" : "results";
-      const docRef = await addDoc(collection(db, collectionName), newItem);
-      setData(prev => [...prev, { id: docRef.id, ...newItem }]);
-    } catch (error) {
-      console.error("Error adding document: ", error);
-    }
+  // Function to handle adding a new student
+  const onAdd = (newStudent) => {
+    setStudentData([...studentData, newStudent]); // Add the new student to the data
   };
 
-  const handleEdit = async (updatedItem) => {
-    try {
-      const collectionName = source === "student" ? "students" : source === "course" ? "courses" : "results";
-      const docRef = doc(db, collectionName, updatedItem.id);
-      await updateDoc(docRef, updatedItem);
-      setData(prev => 
-        prev.map(item => item.id === updatedItem.id ? updatedItem : item)
-      );
-    } catch (error) {
-      console.error("Error updating document: ", error);
-    }
+  // Function to handle editing a student
+  const onEdit = (updatedStudent) => {
+    const updatedData = studentData.map((student) =>
+      student.matricNo === updatedStudent.matricNo ? updatedStudent : student
+    );
+    setStudentData(updatedData); // Update the student data
   };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
     <div>
@@ -119,16 +101,17 @@ const View = () => {
             </Link>
             <Link to="/student" className="flex flex-row gap-1 text-purple-700">
               <IoIosArrowForward size={23} className="pt-1" />
-              {source === "student" ? "Student Details" : source === "course" ? "Course Details" : "Result Details"}
+              Student Courses
             </Link>
           </div>
+          {/* Use the StudentView component with the updated student data and columns */}
           <StudentView
-            data={data}
+            data={studentData}
             columns={columns}
-            title={source === "student" ? "Student Details" : source === "course" ? "Course Details" : "Result Details"}
-            count={`Number of ${source === "student" ? "Students" : source === "course" ? "Courses" : "Results"}`}
-            onAdd={handleAdd}
-            onEdit={handleEdit}
+            title="Student Details"
+            count="Number of Students"
+            onAdd={onAdd} // Pass the onAdd function as a prop
+            onEdit={onEdit} // Pass the onEdit function as a prop
           />
         </main>
       </div>

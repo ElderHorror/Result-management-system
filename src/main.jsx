@@ -11,9 +11,9 @@ import CourseApp from "./CoursePage";
 import ResultApp from "./ResultPage";
 import LevelApp from "./Lecturer";
 import View from "./View";
-// import CourseView from "./CourseView";
-// import ResultView from "./ResultView";
-// import LecturerView from "./LecturerView";
+import CourseView from "./CourseView";
+import ResultView from "./ResultView";
+import LecturerView from "./LecturerView";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -44,18 +44,18 @@ const router = createBrowserRouter([
   path: "/view",
   element: <View />,
   },
-  // {
-  //   path: "/CourseView",
-  //   element: <CourseView />,
-  // },
-  // {
-  //   path: "/ResultView",
-  //   element: <ResultView />,
-  // },
-  // {
-  //   path: "/LecturerView",
-  //   element: <LecturerView />,
-  // },
+  {
+    path: "/CourseView",
+    element: <CourseView />,
+  },
+  {
+    path: "/ResultView",
+    element: <ResultView />,
+  },
+  {
+    path: "/LecturerView",
+    element: <LecturerView />,
+  },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

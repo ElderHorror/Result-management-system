@@ -1,137 +1,264 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import Modal from "./Modal";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebaseConfig"; // Import Firebase instance
 
-export default function StudentView({ data, columns, title, count, onAdd, onEdit }) {
+export default function StudentView({ title, onAdd, onEdit }) {
+  const [students, setStudents] = useState([]);
   const [searchMatric, setSearchMatric] = useState("");
   const [searchName, setSearchName] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("100");
+  const [selectedDepartment, setSelectedDepartment] = useState("Computer Science");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [newItem, setNewItem] = useState({});
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [newStudent, setNewStudent] = useState({});
 
-  const filteredColumns = columns.filter(col => col.key !== 'id');
+  const columns = [
+    { key: "name", header: "Student Name" },
+    { key: "department", header: "Department" },
+    { key: "level", header: "Level" },
+    { key: "matric_number", header: "Matric Number" },
+    { key: "modeOfEntry", header: "Mode of Entry" },
+    { key: "suspended", header: "Suspended" },
+    { key: "cgpa", header: "CGPA" },
+  ];
 
-  const handleSearchMatric = () => {
-    console.log("Searching for matric number:", searchMatric);
+  // Fetch data from Firestore
+  useEffect(() => {
+    const q = query(
+      collection(db, "students"),
+      where("level", "==", selectedLevel),
+      where("department", "==", selectedDepartment),
+      orderBy("matric_number", "asc") // Adjust order field as needed
+    );
+  
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const studentList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setStudents(studentList);
+    });
+  
+    return () => unsubscribe(); // Cleanup on unmount
+  }, [selectedLevel, selectedDepartment]);
+
+  const handleSearch = () => {
+    const filtered = students.filter(
+      (student) =>
+        student.matricNumber.includes(searchMatric) &&
+        student.name.toLowerCase().includes(searchName.toLowerCase())
+    );
+    setStudents(filtered);
   };
 
-  const handleSearchName = () => {
-    console.log("Searching for student name:", searchName);
+  const handleAdd = () => {
+    setIsAddModalOpen(true);
   };
 
-  const handleAdd = () => setIsAddModalOpen(true);
-  const handleEdit = (item) => {
-    setSelectedItem(item);
+  const handleEdit = (student) => {
+    setSelectedStudent(student);
     setIsEditModalOpen(true);
-  };
-
-  const handleCloseModals = () => {
-    setIsAddModalOpen(false);
-    setIsEditModalOpen(false);
-    setSelectedItem(null);
-    setNewItem({});
   };
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    onAdd(newItem);
-    handleCloseModals();
+    onAdd(newStudent);
+    setIsAddModalOpen(false);
+    setNewStudent({});
   };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    onEdit(selectedItem);
-    handleCloseModals();
+    onEdit(selectedStudent);
+    setIsEditModalOpen(false);
+    setSelectedStudent(null);
   };
 
   return (
     <div className="flex flex-col h-[80%] bg-gray-200 px-4 sm:px-6 lg:px-8 py-6">
-      {/* Search and Filter Section */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-        {/* ... (keep your existing dropdowns and search bars) */}
+        <div className="flex gap-4">
+          <div>
+            <label className="text-gray-700 font-bold">Level:</label>
+            <select
+              className="px-2 py-1 border rounded-lg"
+              value={selectedLevel}
+              onChange={(e) => setSelectedLevel(e.target.value)}
+            >
+              {[100, 200, 300, 400].map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-gray-700 font-bold">Department:</label>
+            <select
+              className="px-2 py-1 border rounded-lg"
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+            >
+              <option value="Computer Science">Computer Science</option>
+              <option value="Software Engineering">Software Engineering</option>
+              <option value="Cyber Security">Cyber Security</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Matric Number"
+              className="pl-10 pr-2 py-1 border rounded-lg"
+              value={searchMatric}
+              onChange={(e) => setSearchMatric(e.target.value)}
+            />
+            <FaSearch
+              className="absolute left-3 top-2 text-gray-500 cursor-pointer"
+              onClick={handleSearch}
+            />
+          </div>
+
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Student Name"
+              className="pl-10 pr-2 py-1 border rounded-lg"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+            />
+            <FaSearch
+              className="absolute left-3 top-2 text-gray-500 cursor-pointer"
+              onClick={handleSearch}
+            />
+          </div>
+        </div>
 
         <button
-          className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600"
           onClick={handleAdd}
         >
-          <FaPlus className="w-5 h-5" />
+          <FaPlus />
         </button>
       </div>
 
-      {/* Table Section */}
-      <div className="w-full p-6 bg-white rounded-lg shadow-md overflow-x-auto">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">{title}</h2>
-        
+      <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+        <h2 className="text-2xl font-bold text-center mb-4">{title}</h2>
         <table className="w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-200">
-              {filteredColumns.map((col) => (
-                <th key={col.key} className="border border-gray-300 px-4 py-2">
+              {columns.map((col) => (
+                <th key={col.key} className="border px-4 py-2">
                   {col.header}
                 </th>
               ))}
-              <th className="border border-gray-300 px-4 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
-              <tr key={index} className="text-center hover:bg-gray-100">
-                {filteredColumns.map((col) => (
-                  <td key={col.key} className="border border-gray-300 px-4 py-2">
-                    {col.format ? col.format(item[col.key]) : item[col.key] || "-"}
+            {students.map((student) => (
+              <tr
+                key={student.id}
+                className="text-center hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleEdit(student)}
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className="border px-4 py-2">
+                    {student[col.key]}
                   </td>
                 ))}
-                <td className="border border-gray-300 px-4 py-2">
-                  <button
-                    className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    onClick={() => handleEdit(item)}
-                  >
-                    Edit
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Modals */}
-      <Modal isOpen={isAddModalOpen} onClose={handleCloseModals}>
-        <h2 className="text-xl font-bold mb-4">Add New</h2>
-        <form onSubmit={handleAddSubmit} className="space-y-4">
-          {filteredColumns.map((col) => (
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
+        <h2 className="text-xl font-bold mb-4">Add Student</h2>
+        <form onSubmit={handleAddSubmit}>
+          {columns.map((col) => (
             <div key={col.key} className="mb-4">
-              <label className="block text-gray-700">{col.header}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded-lg"
-                value={newItem[col.key] || ""}
-                onChange={(e) => setNewItem({ ...newItem, [col.key]: e.target.value })}
-              />
+              <label>{col.header}</label>
+              {col.key === "modeOfEntry" ? (
+                <select
+                  className="w-full px-3 py-2 border rounded-lg"
+                  value={newStudent[col.key] || ""}
+                  onChange={(e) => setNewStudent({ ...newStudent, [col.key]: e.target.value })}
+                >
+                  <option value="">Select Mode of Entry</option>
+                  <option value="JUPEB">JUPEB</option>
+                  <option value="UTME/DE">UTME/DE</option>
+                  <option value="CEDLEB">CEDLEB</option>
+                </select>
+              ) : col.key === "suspended" ? (
+                <select
+                  className="w-full px-3 py-2 border rounded-lg"
+                  value={newStudent[col.key] || ""}
+                  onChange={(e) => setNewStudent({ ...newStudent, [col.key]: e.target.value })}
+                >
+                  <option value="">Select Status</option>
+                  <option value="YES">YES</option>
+                  <option value="NO">NO</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  value={newStudent[col.key] || ""}
+                  onChange={(e) => setNewStudent({ ...newStudent, [col.key]: e.target.value })}
+                />
+              )}
             </div>
           ))}
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-            Add
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+            Add Student
           </button>
         </form>
       </Modal>
 
-      <Modal isOpen={isEditModalOpen} onClose={handleCloseModals}>
-        <h2 className="text-xl font-bold mb-4">Edit</h2>
-        <form onSubmit={handleEditSubmit} className="space-y-4">
-          {filteredColumns.map((col) => (
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+        <h2 className="text-xl font-bold mb-4">Edit Student</h2>
+        <form onSubmit={handleEditSubmit}>
+          {columns.map((col) => (
             <div key={col.key} className="mb-4">
-              <label className="block text-gray-700">{col.header}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded-lg"
-                value={selectedItem?.[col.key] || ""}
-                onChange={(e) => setSelectedItem({ ...selectedItem, [col.key]: e.target.value })}
-              />
+              <label>{col.header}</label>
+              {col.key === "modeOfEntry" ? (
+                <select
+                  className="w-full px-3 py-2 border rounded-lg"
+                  value={selectedStudent?.[col.key] || ""}
+                  onChange={(e) => setSelectedStudent({ ...selectedStudent, [col.key]: e.target.value })}
+                >
+                  <option value="">Select Mode of Entry</option>
+                  <option value="JUPEB">JUPEB</option>
+                  <option value="UTME/DE">UTME/DE</option>
+                  <option value="CEDLEB">CEDLEB</option>
+                </select>
+              ) : col.key === "suspended" ? (
+                <select
+                  className="w-full px-3 py-2 border rounded-lg"
+                  value={selectedStudent?.[col.key] || ""}
+                  onChange={(e) => setSelectedStudent({ ...selectedStudent, [col.key]: e.target.value })}
+                >
+                  <option value="">Select Status</option>
+                  <option value="YES">YES</option>
+                  <option value="NO">NO</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-lg"
+                  value={selectedStudent?.[col.key] || ""}
+                  onChange={(e) => setSelectedStudent({ ...selectedStudent, [col.key]: e.target.value })}
+                />
+              )}
             </div>
           ))}
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
             Save Changes
           </button>
         </form>

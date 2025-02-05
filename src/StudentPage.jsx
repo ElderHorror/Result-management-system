@@ -1,86 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import SideBar from './Component/SideBar';
 import Header from './Component/Header';
 import { IoIosArrowForward } from "react-icons/io";
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link } from 'react-router-dom';
 import StudentLevels from './Sections/SchoolLevel';
-import { db } from '../firebaseConfig';
 import { collection, getDocs } from "firebase/firestore";
+import { db } from '../firebaseConfig'; // Import Firestore instance
 
 const StudentApp = () => {
   const [studentData, setStudentData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchStudentData = async () => {
       try {
-        const studentCollection = collection(db, "students");
-        const studentSnapshot = await getDocs(studentCollection);
+        const querySnapshot = await getDocs(collection(db, "students"));
+        const levelCount = {};
 
-        const levelCounts = {};
-        studentSnapshot.docs.forEach(doc => {
-          const student = doc.data();
-          const level = student.level.toString();  // Ensure level is a string
-          levelCounts[level] = (levelCounts[level] || 0) + 1;
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const level = data.level;
+
+          // Count students per level
+          levelCount[level] = (levelCount[level] || 0) + 1;
         });
 
-        const studentLevelsArray = Object.entries(levelCounts).map(([level, count]) => ({
-          level, count
-        }));
+        // Convert object to array and sort by level
+        const sortedData = Object.keys(levelCount)
+          .sort((a, b) => parseInt(a) - parseInt(b))
+          .map(level => ({
+            level,
+            count: levelCount[level]
+          }));
 
-        setStudentData(studentLevelsArray);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching data');
-        console.error("Error fetching data: ", err);
-        setLoading(false);
+        setStudentData(sortedData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
       }
     };
 
-    fetchStudents();
+    fetchStudentData();
   }, []);
 
-  const handleViewClick = (level) => {
-    // Navigate to the View page and pass the selected level as state
-    navigate('/view', { state: { source: 'student', level } });
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
   return (
-    <div>
-      <div className="flex h-screen bg-gray-200 font-poppins">
-        <SideBar />
-        <main className="flex-1 flex flex-col">
-          <Header />
-          <h1 className="px-10 text-2xl font-medium pt-[170px] md:pt-4"> Admin Dashboard</h1>
-          <div className="flex flex-row gap-1 px-10 pt-2 pb-8 text-base text-gray-700">
-            <p>Home</p>
-            <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
-              <IoIosArrowForward size={23} className="pt-1" />
-              Admin
-            </Link>
-            <Link to="/student" className="flex flex-row gap-1 text-purple-700">
-              <IoIosArrowForward size={23} className="pt-1" />
-              Student Level
-            </Link>
-          </div>
-          <StudentLevels
-            data={studentData}
-            title="Student Levels"
-            count="Number of Students"
-            onViewClick={handleViewClick} // Pass the click handler
-          />
-        </main>
-      </div>
+    <div className="flex h-screen bg-gray-200 font-poppins">
+      <SideBar />
+      <main className="flex-1 flex flex-col">
+        <Header />
+        <h1 className="px-10 text-2xl font-medium pt-[170px] md:pt-4">Admin Dashboard</h1>
+        <div className="flex flex-row gap-1 px-10 pt-2 pb-8 text-base text-gray-700">
+          <p>Home</p>
+          <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
+            <IoIosArrowForward size={23} className="pt-1" />
+            Admin
+          </Link>
+          <Link to="/student" className="flex flex-row gap-1 text-purple-700">
+            <IoIosArrowForward size={23} className="pt-1" />
+            Student Level
+          </Link>
+        </div>
+        <StudentLevels data={studentData} title="Student Levels" count="Number of Students" view="/view" />
+      </main>
     </div>
   );
 };
