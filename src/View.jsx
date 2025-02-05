@@ -2,14 +2,32 @@ import React, { useEffect, useState } from "react";
 import SideBar from "./Component/SideBar";
 import Header from "./Component/Header";
 import { IoIosArrowForward } from "react-icons/io";
-import { Link, useLocation } from "react-router-dom"; // Import useLocation
+import { Link, useLocation } from "react-router-dom";
 import StudentView from "./Sections/SchoolView";
 import { db } from "../firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc } from "firebase/firestore";
+
+const columns = [
+  { header: "Matric No", key: "matricNo" },
+  { header: "Name", key: "name" },
+  { header: "Department", key: "department" },
+  { header: "CGPA", key: "cgpa" },
+  {
+    header: "Suspended",
+    key: "suspended",
+    format: (value) => (
+      <span className={value === "YES" ? "text-green-600" : "text-red-600"}>
+        {value}
+      </span>
+    ),
+  },
+  { header: "Year of Entry", key: "yearOfEntry" },
+  { header: "Mode of Entry", key: "modeOfEntry" },
+];
 
 const View = () => {
   const location = useLocation();
-  const { source, level } = location.state || {}; // Get the source and level from state
+  const { source, level } = location.state || {};
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +47,7 @@ const View = () => {
             collectionName = "results";
             break;
           default:
-            collectionName = "students"; // Default to students
+            collectionName = "students";
         }
 
         const querySnapshot = await getDocs(collection(db, collectionName));
@@ -38,7 +56,6 @@ const View = () => {
           ...doc.data(),
         }));
 
-        // Filter data based on level (if applicable)
         if (source === "student" && level) {
           const filteredData = fetchedData.filter(
             (item) => item.level.toString() === level
@@ -59,13 +76,31 @@ const View = () => {
     fetchData();
   }, [source, level]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handleAdd = async (newItem) => {
+    try {
+      const collectionName = source === "student" ? "students" : source === "course" ? "courses" : "results";
+      const docRef = await addDoc(collection(db, collectionName), newItem);
+      setData(prev => [...prev, { id: docRef.id, ...newItem }]);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  };
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  const handleEdit = async (updatedItem) => {
+    try {
+      const collectionName = source === "student" ? "students" : source === "course" ? "courses" : "results";
+      const docRef = doc(db, collectionName, updatedItem.id);
+      await updateDoc(docRef, updatedItem);
+      setData(prev => 
+        prev.map(item => item.id === updatedItem.id ? updatedItem : item)
+      );
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
@@ -89,8 +124,11 @@ const View = () => {
           </div>
           <StudentView
             data={data}
+            columns={columns}
             title={source === "student" ? "Student Details" : source === "course" ? "Course Details" : "Result Details"}
             count={`Number of ${source === "student" ? "Students" : source === "course" ? "Courses" : "Results"}`}
+            onAdd={handleAdd}
+            onEdit={handleEdit}
           />
         </main>
       </div>

@@ -35,7 +35,7 @@ const Section = () => {
         </div>
         <div className="ml-4">
           <h3 className="text-xl font-normal text-gray-900">4</h3>
-          <p className="text-sm text-gray-400">Level</p>
+          <p className="text-sm text-gray-400">Lecturer</p>
         </div>
       </Link>
 
