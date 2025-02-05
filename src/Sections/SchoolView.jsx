@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import Modal from "./Modal";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../firebaseConfig"; // Import Firebase instance
 
 export default function StudentView({ title, onAdd, onEdit }) {
@@ -63,16 +63,25 @@ export default function StudentView({ title, onAdd, onEdit }) {
     setIsEditModalOpen(true);
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    onAdd(newStudent);
+    // Add student to Firestore
+    const docRef = await addDoc(collection(db, "students"), newStudent);
+    // Add the new student to the state for immediate reflection in the UI
+    setStudents([...students, { id: docRef.id, ...newStudent }]);
     setIsAddModalOpen(false);
     setNewStudent({});
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    onEdit(selectedStudent);
+    // Update student in Firestore
+    const studentRef = doc(db, "students", selectedStudent.id);
+    await updateDoc(studentRef, selectedStudent);
+    // Update the state to reflect changes immediately
+    setStudents(students.map((student) =>
+      student.id === selectedStudent.id ? selectedStudent : student
+    ));
     setIsEditModalOpen(false);
     setSelectedStudent(null);
   };
