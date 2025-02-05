@@ -5,39 +5,35 @@ import { IoIosArrowForward } from "react-icons/io";
 import { Link } from "react-router-dom";
 import StudentView from "./Sections/SchoolView"; // Import the modified StudentView component
 
-// Sample course data with the required fields
-const courseData = [
+// Sample result data with the required fields
+const resultData = [
   {
-    courseTitle: "Introduction to Programming",
-    courseCode: "CSC101",
-    level: 100,
-    units: 3,
-    department: "Computer Science",
+    studentName: "Chinedu Okoro",
+    matricNumber: "swe/2021/001",
+    department: "Software Engineering",
+    cgpa: 4.5,
   },
   {
-    courseTitle: "Data Structures",
-    courseCode: "CSC201",
-    level: 200,
-    units: 4,
+    studentName: "Aisha Bello",
+    matricNumber: "csc/2020/045",
     department: "Computer Science",
+    cgpa: 3.8,
   },
   {
-    courseTitle: "Cyber Security Fundamentals",
-    courseCode: "CYB101",
-    level: 100,
-    units: 2,
+    studentName: "Emeka Nwankwo",
+    matricNumber: "cyb/2022/012",
     department: "Cyber Security",
+    cgpa: 4.2,
   },
-  // Add more course data as needed
+  // Add more result data as needed
 ];
 
-// Define the column configuration for courses
-const courseColumns = [
-  { header: "Course Title", key: "courseTitle" },
-  { header: "Course Code", key: "courseCode" },
-  { header: "Level", key: "level" },
-  { header: "Units", key: "units" },
+// Define the column configuration for results
+const resultColumns = [
+  { header: "Student Name", key: "studentName" },
+  { header: "Matric Number", key: "matricNumber" },
   { header: "Department", key: "department" },
+  { header: "CGPA", key: "cgpa" },
   {
     header: "Action",
     key: "action",
@@ -46,25 +42,25 @@ const courseColumns = [
         className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
         onClick={() => handleEdit(item)} // Pass the item to the edit handler
       >
-        Edit
+        View Result
       </button>
     ),
   },
 ];
 
 // Handle Add button click
-const handleAdd = (newCourse) => {
-  console.log("New Course Data:", newCourse);
+const handleAdd = (newResult) => {
+  console.log("New Result Data:", newResult);
   // Add logic to update the data (e.g., state or API call)
 };
 
 // Handle Edit button click
-const handleEdit = (updatedCourse) => {
-  console.log("Updated Course Data:", updatedCourse);
+const handleEdit = (updatedResult) => {
+  console.log("Updated Result Data:", updatedResult);
   // Add logic to update the data (e.g., state or API call)
 };
 
-const CourseView = () => {
+const ResultView = () => {
   return (
     <div>
       <div className="flex h-screen bg-gray-200 font-poppins">
@@ -80,17 +76,17 @@ const CourseView = () => {
               <IoIosArrowForward size={23} className="pt-1" />
               Admin
             </Link>
-            <Link to="/course" className="flex flex-row gap-1 text-purple-700">
+            <Link to="/result" className="flex flex-row gap-1 text-purple-700">
               <IoIosArrowForward size={23} className="pt-1" />
-              Courses
+              Results
             </Link>
           </div>
-          {/* Use the StudentView component with the updated course data and columns */}
+          {/* Use the StudentView component with the updated result data and columns */}
           <StudentView
-            data={courseData}
-            columns={courseColumns}
-            title="Course Details"
-            count="Number of Courses"
+            data={resultData}
+            columns={resultColumns}
+            title="Result Details"
+            count="Number of Results"
             onAdd={handleAdd} // Pass the Add handler
             onEdit={handleEdit} // Pass the Edit handler
           />
@@ -100,4 +96,4 @@ const CourseView = () => {
   );
 };
 
-export default CourseView;
+export default ResultView;

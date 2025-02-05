@@ -26,15 +26,16 @@ const LevelApp = () => {
               <IoIosArrowForward size={23} className="pt-1" />
               Admin
             </Link>
-            <Link to="/student" className="flex flex-row gap-1 text-purple-700">
+            <Link to="/level" className="flex flex-row gap-1 text-purple-700">
               <IoIosArrowForward size={23} className="pt-1" />
-              Student Courses
+              Lecturers
             </Link>
           </div>
           <StudentLevels
             data={studentData}
-            title="Student Level"
+            title="Lecturers"
             count="Number of Lecturer"
+            view="/LecturerView"
           />
         </main>
       </div>
