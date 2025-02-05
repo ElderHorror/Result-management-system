@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SideBar from './Component/SideBar';
 import Header from './Component/Header';
 import { IoIosArrowForward } from "react-icons/io";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import StudentLevels from './Sections/SchoolLevel';
 import { db } from '../firebaseConfig';
 import { collection, getDocs } from "firebase/firestore";
@@ -11,6 +11,7 @@ const StudentApp = () => {
   const [studentData, setStudentData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -41,6 +42,11 @@ const StudentApp = () => {
     fetchStudents();
   }, []);
 
+  const handleViewClick = (level) => {
+    // Navigate to the View page and pass the selected level as state
+    navigate('/view', { state: { source: 'student', level } });
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -67,7 +73,12 @@ const StudentApp = () => {
               Student Level
             </Link>
           </div>
-          <StudentLevels data={studentData} title="Student Levels" count="Number of Students" />
+          <StudentLevels
+            data={studentData}
+            title="Student Levels"
+            count="Number of Students"
+            onViewClick={handleViewClick} // Pass the click handler
+          />
         </main>
       </div>
     </div>

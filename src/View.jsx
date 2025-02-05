@@ -1,43 +1,72 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import SideBar from "./Component/SideBar";
 import Header from "./Component/Header";
 import { IoIosArrowForward } from "react-icons/io";
-import { Link } from "react-router-dom";
-import StudentView from "./Sections/SchoolView"; // Import the modified StudentView component
-
-// Sample student data with the required fields
-const studentData = [
-  {
-    matricNo: "swe/2021/001",
-    name: "Chinedu Okoro",
-    department: "Software Engineering",
-    cgpa: 4.5,
-    suspended: "NO",
-    yearOfEntry: 2021,
-    modeOfEntry: "Normal",
-  },
-  {
-    matricNo: "csc/2020/045",
-    name: "Aisha Bello",
-    department: "Computer Science",
-    cgpa: 3.8,
-    suspended: "YES",
-    yearOfEntry: 2020,
-    modeOfEntry: "D.E",
-  },
-  {
-    matricNo: "cyb/2022/012",
-    name: "Emeka Nwankwo",
-    department: "Cyber Security",
-    cgpa: 4.2,
-    suspended: "NO",
-    yearOfEntry: 2022,
-    modeOfEntry: "Jupeb",
-  },
-  // Add more student data as needed
-];
+import { Link, useLocation } from "react-router-dom"; // Import useLocation
+import StudentView from "./Sections/SchoolView";
+import { db } from "../firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
 
 const View = () => {
+  const location = useLocation();
+  const { source, level } = location.state || {}; // Get the source and level from state
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let collectionName = "";
+        switch (source) {
+          case "student":
+            collectionName = "students";
+            break;
+          case "course":
+            collectionName = "courses";
+            break;
+          case "result":
+            collectionName = "results";
+            break;
+          default:
+            collectionName = "students"; // Default to students
+        }
+
+        const querySnapshot = await getDocs(collection(db, collectionName));
+        const fetchedData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Filter data based on level (if applicable)
+        if (source === "student" && level) {
+          const filteredData = fetchedData.filter(
+            (item) => item.level.toString() === level
+          );
+          setData(filteredData);
+        } else {
+          setData(fetchedData);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        setError("Error fetching data");
+        console.error("Error fetching data: ", err);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [source, level]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
   return (
     <div>
       <div className="flex h-screen bg-gray-200 font-poppins">
@@ -55,14 +84,13 @@ const View = () => {
             </Link>
             <Link to="/student" className="flex flex-row gap-1 text-purple-700">
               <IoIosArrowForward size={23} className="pt-1" />
-              Student Courses
+              {source === "student" ? "Student Details" : source === "course" ? "Course Details" : "Result Details"}
             </Link>
           </div>
-          {/* Use the StudentView component with the updated student data */}
           <StudentView
-            data={studentData}
-            title="Student Details"
-            count="Number of Students"
+            data={data}
+            title={source === "student" ? "Student Details" : source === "course" ? "Course Details" : "Result Details"}
+            count={`Number of ${source === "student" ? "Students" : source === "course" ? "Courses" : "Results"}`}
           />
         </main>
       </div>
