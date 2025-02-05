@@ -3,7 +3,7 @@ import { FaPlus } from 'react-icons/fa'; // Import the Plus icon
 import { Link } from 'react-router-dom';
 import { Links } from 'react-router-dom';
 
-export default function StudentLevels({ data, title, count }) {
+export default function StudentLevels({ data, title, count, view }) {
   return (
     <div className="flex flex-col h-[80%] bg-gray-200 px-4 sm:px-10 lg:px-8">
       {/* Dropdown Section (Session and Semester) */}
@@ -44,12 +44,12 @@ export default function StudentLevels({ data, title, count }) {
           </div>
 
           {/* Plus Button (Far Right) */}
-          <button
+          {/* <button
             className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
             aria-label="Add"
           >
-            <FaPlus className="w-5 h-5" /> {/* Plus icon */}
-          </button>
+            <FaPlus className="w-5 h-5" /> 
+          </button> */}
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function StudentLevels({ data, title, count }) {
                 <td className="border border-gray-300 px-4 py-2">{item.level}</td>
                 <td className="border border-gray-300 px-4 py-2">{item.count}</td>
                 <td className="border border-gray-300 px-4 py-2">
-                  <Link to="/view" className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  <Link to={view} className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
                     View
                   </Link>
                 </td>

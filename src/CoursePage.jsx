@@ -12,6 +12,11 @@ const studentData = [
   { level: '400', count: 20 },
 ];
 
+const handleViewClick = (level) => {
+  // Navigate to the View page and pass the selected level as state
+  navigate('/CourseView', { state: { source: 'student', level } });
+};
+
 const CourseApp = () => {
   return (
     <div>
@@ -31,7 +36,13 @@ const CourseApp = () => {
               Student Courses
             </Link>
           </div>
-          <StudentLevels data={studentData} title="Student Courses"  count="Number of Courses"/>
+          <StudentLevels 
+          data={studentData} 
+          title="Student Courses" 
+          page = "Course"  
+          count="Number of Courses" 
+          onViewClick={handleViewClick} 
+          view="/CourseView"/>
         </main>
       </div>
     </div>

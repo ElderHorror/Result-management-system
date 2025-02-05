@@ -77,6 +77,7 @@ const StudentApp = () => {
             data={studentData}
             title="Student Levels"
             count="Number of Students"
+            view = "/view"
             onViewClick={handleViewClick} // Pass the click handler
           />
         </main>

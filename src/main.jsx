@@ -10,6 +10,7 @@ import StudentApp from "./StudentPage";
 import CourseApp from "./CoursePage";
 import ResultApp from "./ResultPage";
 import LevelApp from "./LevelPage";
+import CourseView from "./CourseView";
 import { db } from '../firebaseConfig';
 import { collection, getDocs } from "firebase/firestore";
 import View from "./View";
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
   {
   path: "/view",
   element: <View />,
+  },
+  {
+    path: "/CourseView",
+    element: <CourseView />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(
