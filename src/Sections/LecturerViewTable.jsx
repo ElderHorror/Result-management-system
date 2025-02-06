@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import Modal from "./Modal";
-import { collection, onSnapshot, addDoc, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 
 const LecturerViewTable = () => {
   const [lecturers, setLecturers] = useState([]);
+  const [courses, setCourses] = useState([]); // New state for courses
   const [filteredLecturers, setFilteredLecturers] = useState([]);
+  const storedLevel = sessionStorage.getItem("selectedLevel") || "All";
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedLecturer, setSelectedLecturer] = useState(null);
@@ -14,16 +22,14 @@ const LecturerViewTable = () => {
     lecturer_name: "",
     course_code: "",
     course_name: "",
-    level: "100", // Default level set to 100
+    level: "100",
     resultsSubmitted: "No",
-    semester: "1st Semester", // Default semester
+    semester: "1st Semester",
   });
 
-  // Filters
-  const [filterLevel, setFilterLevel] = useState("All");
+  const [filterLevel, setFilterLevel] = useState(storedLevel);
   const [filterSemester, setFilterSemester] = useState("All");
 
-  // Define table columns
   const columns = [
     { key: "lecturer_name", header: "Lecturer Name" },
     { key: "course_code", header: "Course Code" },
@@ -50,7 +56,20 @@ const LecturerViewTable = () => {
         ...doc.data(),
       }));
       setLecturers(lecturerList);
-      setFilteredLecturers(lecturerList); // Initialize filteredLecturers with all lecturers
+      setFilteredLecturers(lecturerList);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch courses from Firebase
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "courses"), (snapshot) => {
+      const courseList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setCourses(courseList); // Set courses state with fetched courses
     });
 
     return () => unsubscribe();
@@ -61,11 +80,15 @@ const LecturerViewTable = () => {
     let filteredData = lecturers;
 
     if (filterLevel !== "All") {
-      filteredData = filteredData.filter((lecturer) => lecturer.level === filterLevel);
+      filteredData = filteredData.filter(
+        (lecturer) => lecturer.level === filterLevel
+      );
     }
 
     if (filterSemester !== "All") {
-      filteredData = filteredData.filter((lecturer) => lecturer.semester === filterSemester);
+      filteredData = filteredData.filter(
+        (lecturer) => lecturer.semester === filterSemester
+      );
     }
 
     setFilteredLecturers(filteredData);
@@ -80,9 +103,9 @@ const LecturerViewTable = () => {
         lecturer_name: "",
         course_code: "",
         course_name: "",
-        level: "100", // Reset level to default after submission
+        level: "100",
         resultsSubmitted: "No",
-        semester: "1st Semester", // Reset semester
+        semester: "1st Semester",
       });
     } catch (error) {
       console.error("Error adding lecturer:", error);
@@ -98,6 +121,35 @@ const LecturerViewTable = () => {
       setSelectedLecturer(null);
     } catch (error) {
       console.error("Error updating lecturer:", error);
+    }
+  };
+
+  // Function to handle course code selection and update course name
+  // Function to handle course code selection and update course name in the edit modal
+  const handleCourseCodeChange = (courseCode) => {
+    const selectedCourse = courses.find(
+      (course) => course.course_code === courseCode
+    );
+    if (selectedCourse) {
+      setSelectedLecturer({
+        ...selectedLecturer,
+        course_code: selectedCourse.course_code,
+        course_name: selectedCourse.course_name,
+      });
+    }
+  };
+
+  // Function to handle course name selection and update course code in the edit modal
+  const handleCourseNameChange = (courseName) => {
+    const selectedCourse = courses.find(
+      (course) => course.course_name === courseName
+    );
+    if (selectedCourse) {
+      setSelectedLecturer({
+        ...selectedLecturer,
+        course_code: selectedCourse.course_code,
+        course_name: selectedCourse.course_name,
+      });
     }
   };
 
@@ -179,19 +231,54 @@ const LecturerViewTable = () => {
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
         <h2 className="text-xl font-bold mb-4">Add Lecturer</h2>
         <form onSubmit={handleAddSubmit}>
-          {columns.slice(0, 3).map((col) => (
-            <div key={col.key} className="mb-4">
-              <label>{col.header}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded-lg"
-                value={newLecturer[col.key]}
-                onChange={(e) =>
-                  setNewLecturer({ ...newLecturer, [col.key]: e.target.value })
-                }
-              />
-            </div>
-          ))}
+          {/* Lecturer Name */}
+          <div className="mb-4">
+            <label>Lecturer Name</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newLecturer.lecturer_name}
+              onChange={(e) =>
+                setNewLecturer({
+                  ...newLecturer,
+                  lecturer_name: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          {/* Course Code and Course Title Dropdowns */}
+          <div className="mb-4">
+            <label>Course Code</label>
+            <select
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newLecturer.course_code}
+              onChange={(e) => handleCourseCodeChange(e.target.value)}
+            >
+              <option value="">Select Course Code</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.course_code}>
+                  {course.course_code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label>Course Title</label>
+            <select
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newLecturer.course_name}
+              onChange={(e) => handleCourseNameChange(e.target.value)}
+            >
+              <option value="">Select Course Title</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.course_name}>
+                  {course.course_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Level Dropdown */}
           <div className="mb-4">
@@ -225,105 +312,121 @@ const LecturerViewTable = () => {
             </select>
           </div>
 
-          <div className="mb-4">
-            <label>Results Submitted</label>
-            <select
-              className="w-full px-3 py-2 border rounded-lg"
-              value={newLecturer.resultsSubmitted}
-              onChange={(e) =>
-                setNewLecturer({ ...newLecturer, resultsSubmitted: e.target.value })
-              }
-            >
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
-            </select>
-          </div>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg"
+          >
             Add Lecturer
           </button>
         </form>
       </Modal>
 
       {/* Edit Lecturer Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-        <h2 className="text-xl font-bold mb-4">Edit Lecturer</h2>
-        <form onSubmit={handleEditSubmit}>
-          {columns.slice(0, 3).map((col) => (
-            <div key={col.key} className="mb-4">
-              <label>{col.header}</label>
+      {selectedLecturer && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+        >
+          <h2 className="text-xl font-bold mb-4">Edit Lecturer</h2>
+          <form onSubmit={handleEditSubmit}>
+            {/* Lecturer Name */}
+            <div className="mb-4">
+              <label>Lecturer Name</label>
               <input
                 type="text"
                 className="w-full px-3 py-2 border rounded-lg"
-                value={selectedLecturer?.[col.key] || ""}
+                value={selectedLecturer.lecturer_name}
                 onChange={(e) =>
                   setSelectedLecturer({
                     ...selectedLecturer,
-                    [col.key]: e.target.value,
+                    lecturer_name: e.target.value,
                   })
                 }
               />
             </div>
-          ))}
 
-          {/* Level Dropdown for Editing */}
-          <div className="mb-4">
-            <label>Level</label>
-            <select
-              className="w-full px-3 py-2 border rounded-lg"
-              value={selectedLecturer?.level || "100"}
-              onChange={(e) =>
-                setSelectedLecturer({
-                  ...selectedLecturer,
-                  level: e.target.value,
-                })
-              }
-            >
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="300">300</option>
-              <option value="400">400</option>
-            </select>
-          </div>
+            {/* Course Code and Course Title Dropdowns */}
+            <div className="mb-4">
+              <label>Course Code</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedLecturer.course_code}
+                onChange={(e) => handleCourseCodeChange(e.target.value)}
+              >
+                <option value="">Select Course Code</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.course_code}>
+                    {course.course_code}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Semester Dropdown for Editing */}
-          <div className="mb-4">
-            <label>Semester</label>
-            <select
-              className="w-full px-3 py-2 border rounded-lg"
-              value={selectedLecturer?.semester || "1st Semester"}
-              onChange={(e) =>
-                setSelectedLecturer({
-                  ...selectedLecturer,
-                  semester: e.target.value,
-                })
-              }
-            >
-              <option value="1st Semester">1st Semester</option>
-              <option value="2nd Semester">2nd Semester</option>
-            </select>
-          </div>
+            <div className="mb-4">
+              <label>Course Title</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedLecturer.course_name}
+                onChange={(e) => handleCourseNameChange(e.target.value)}
+              >
+                <option value="">Select Course Title</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.course_name}>
+                    {course.course_name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="mb-4">
-            <label>Results Submitted</label>
-            <select
-              className="w-full px-3 py-2 border rounded-lg"
-              value={selectedLecturer?.resultsSubmitted || "No"}
-              onChange={(e) =>
-                setSelectedLecturer({
-                  ...selectedLecturer,
-                  resultsSubmitted: e.target.value,
-                })
-              }
+            {/* Level Dropdown */}
+            <div className="mb-4">
+              <label>Level</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedLecturer.level}
+                onChange={(e) =>
+                  setSelectedLecturer({
+                    ...selectedLecturer,
+                    level: e.target.value,
+                  })
+                }
+              >
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="300">300</option>
+                <option value="400">400</option>
+              </select>
+            </div>
+
+            {/* Semester Dropdown */}
+            <div className="mb-4">
+              <label>Semester</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedLecturer.semester}
+                onChange={(e) =>
+                  setSelectedLecturer({
+                    ...selectedLecturer,
+                    semester: e.target.value,
+                  })
+                }
+              >
+                <option value="1st Semester">1st Semester</option>
+                <option value="2nd Semester">2nd Semester</option>
+              </select>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 rounded-lg"
             >
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
-            </select>
-          </div>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
-            Save Changes
-          </button>
-        </form>
-      </Modal>
+              Update Lecturer
+            </button>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };

@@ -1,15 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import Modal from "./Modal";
-import { collection, query, where, orderBy, onSnapshot, addDoc, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../../firebaseConfig"; // Import Firebase instance
 
 export default function StudentView({ title, onAdd, onEdit }) {
   const [students, setStudents] = useState([]);
   const [searchMatric, setSearchMatric] = useState("");
   const [searchName, setSearchName] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("100");
-  const [selectedDepartment, setSelectedDepartment] = useState("Computer Science");
+  const [selectedLevel, setSelectedLevel] = useState(() => {
+    // Get the selected level from sessionStorage or default to '100'
+    return sessionStorage.getItem("selectedLevel") || "100";
+  });
+
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("Computer Science");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -33,7 +47,7 @@ export default function StudentView({ title, onAdd, onEdit }) {
       where("department", "==", selectedDepartment),
       orderBy("matric_number", "asc") // Adjust order field as needed
     );
-  
+
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const studentList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -41,7 +55,7 @@ export default function StudentView({ title, onAdd, onEdit }) {
       }));
       setStudents(studentList);
     });
-  
+
     return () => unsubscribe(); // Cleanup on unmount
   }, [selectedLevel, selectedDepartment]);
 
@@ -73,15 +87,23 @@ export default function StudentView({ title, onAdd, onEdit }) {
     setNewStudent({});
   };
 
+  const handleLevelChange = (e) => {
+    const newLevel = e.target.value;
+    setSelectedLevel(newLevel);
+    sessionStorage.setItem("selectedLevel", newLevel); // Store the selected level
+  };
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     // Update student in Firestore
     const studentRef = doc(db, "students", selectedStudent.id);
     await updateDoc(studentRef, selectedStudent);
     // Update the state to reflect changes immediately
-    setStudents(students.map((student) =>
-      student.id === selectedStudent.id ? selectedStudent : student
-    ));
+    setStudents(
+      students.map((student) =>
+        student.id === selectedStudent.id ? selectedStudent : student
+      )
+    );
     setIsEditModalOpen(false);
     setSelectedStudent(null);
   };
@@ -95,7 +117,7 @@ export default function StudentView({ title, onAdd, onEdit }) {
             <select
               className="px-2 py-1 border rounded-lg"
               value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
+              onChange={handleLevelChange}
             >
               {[100, 200, 300, 400].map((level) => (
                 <option key={level} value={level}>
@@ -197,7 +219,9 @@ export default function StudentView({ title, onAdd, onEdit }) {
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
                   value={newStudent[col.key] || ""}
-                  onChange={(e) => setNewStudent({ ...newStudent, [col.key]: e.target.value })}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                  }
                 >
                   <option value="">Select Mode of Entry</option>
                   <option value="JUPEB">JUPEB</option>
@@ -208,7 +232,9 @@ export default function StudentView({ title, onAdd, onEdit }) {
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
                   value={newStudent[col.key] || ""}
-                  onChange={(e) => setNewStudent({ ...newStudent, [col.key]: e.target.value })}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                  }
                 >
                   <option value="">Select Status</option>
                   <option value="YES">YES</option>
@@ -219,12 +245,17 @@ export default function StudentView({ title, onAdd, onEdit }) {
                   type="text"
                   className="w-full px-3 py-2 border rounded-lg"
                   value={newStudent[col.key] || ""}
-                  onChange={(e) => setNewStudent({ ...newStudent, [col.key]: e.target.value })}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                  }
                 />
               )}
             </div>
           ))}
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+          >
             Add Student
           </button>
         </form>
@@ -240,7 +271,12 @@ export default function StudentView({ title, onAdd, onEdit }) {
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
                   value={selectedStudent?.[col.key] || ""}
-                  onChange={(e) => setSelectedStudent({ ...selectedStudent, [col.key]: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedStudent({
+                      ...selectedStudent,
+                      [col.key]: e.target.value,
+                    })
+                  }
                 >
                   <option value="">Select Mode of Entry</option>
                   <option value="JUPEB">JUPEB</option>
@@ -251,7 +287,12 @@ export default function StudentView({ title, onAdd, onEdit }) {
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
                   value={selectedStudent?.[col.key] || ""}
-                  onChange={(e) => setSelectedStudent({ ...selectedStudent, [col.key]: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedStudent({
+                      ...selectedStudent,
+                      [col.key]: e.target.value,
+                    })
+                  }
                 >
                   <option value="">Select Status</option>
                   <option value="YES">YES</option>
@@ -262,16 +303,24 @@ export default function StudentView({ title, onAdd, onEdit }) {
                   type="text"
                   className="w-full px-3 py-2 border rounded-lg"
                   value={selectedStudent?.[col.key] || ""}
-                  onChange={(e) => setSelectedStudent({ ...selectedStudent, [col.key]: e.target.value })}
+                  onChange={(e) =>
+                    setSelectedStudent({
+                      ...selectedStudent,
+                      [col.key]: e.target.value,
+                    })
+                  }
                 />
               )}
             </div>
           ))}
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+          >
             Save Changes
           </button>
         </form>
       </Modal>
     </div>
   );
-};
+}

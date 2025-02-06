@@ -17,7 +17,9 @@ export default function CourseView({ title }) {
   const [courses, setCourses] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [searchTitle, setSearchTitle] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("100");
+  const [selectedLevel, setSelectedLevel] = useState(
+    sessionStorage.getItem("selectedLevel") || "100" // Default to 100 if nothing is stored
+  );
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -41,11 +43,17 @@ export default function CourseView({ title }) {
   ];
 
   useEffect(() => {
-    const q = query(
-      collection(db, "courses"),
-      where("level", "==", selectedLevel),
-      orderBy("course_code", "asc")
-    );
+    let q;
+
+    if (selectedLevel === "all") {
+      q = query(collection(db, "courses"), orderBy("course_code", "asc")); // Fetch all courses
+    } else {
+      q = query(
+        collection(db, "courses"),
+        where("level", "==", selectedLevel),
+        orderBy("course_code", "asc")
+      );
+    }
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const courseList = querySnapshot.docs.map((doc) => ({
@@ -56,7 +64,8 @@ export default function CourseView({ title }) {
     });
 
     return () => unsubscribe();
-  }, [selectedLevel]);
+  }, [selectedLevel]); // Re-run when selectedLevel changes
+  // Re-run when selectedLevel changes
 
   const handleSearch = () => {
     const filtered = courses.filter(
@@ -126,8 +135,13 @@ export default function CourseView({ title }) {
             <select
               className="px-2 py-1 border rounded-lg"
               value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
+              onChange={(e) => {
+                const newLevel = e.target.value;
+                setSelectedLevel(newLevel);
+                sessionStorage.setItem("selectedLevel", newLevel); // Store selection
+              }}
             >
+              <option value="all">All Courses</option>
               {[100, 200, 300, 400].map((level) => (
                 <option key={level} value={level}>
                   {level}
