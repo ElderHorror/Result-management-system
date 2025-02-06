@@ -225,8 +225,8 @@ export default function StudentView({ title, onAdd, onEdit }) {
                 >
                   <option value="">Select Mode of Entry</option>
                   <option value="JUPEB">JUPEB</option>
-                  <option value="UTME/DE">UTME/DE</option>
-                  <option value="CEDLEB">CEDLEB</option>
+                  <option value="UTME">UTME</option>
+                  <option value="DE">DE</option>
                 </select>
               ) : col.key === "suspended" ? (
                 <select
@@ -280,8 +280,8 @@ export default function StudentView({ title, onAdd, onEdit }) {
                 >
                   <option value="">Select Mode of Entry</option>
                   <option value="JUPEB">JUPEB</option>
-                  <option value="UTME/DE">UTME/DE</option>
-                  <option value="CEDLEB">CEDLEB</option>
+                  <option value="UTME">UTME</option>
+                  <option value="DE">DE</option>
                 </select>
               ) : col.key === "suspended" ? (
                 <select

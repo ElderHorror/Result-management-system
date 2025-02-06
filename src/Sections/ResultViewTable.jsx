@@ -72,14 +72,12 @@ const ResultViewTable = () => {
   };
 
   // Save edited results to Firebase
-  // Save edited results to Firebase
-const saveResults = async () => {
+  const saveResults = async () => {
     if (!editingStudent) return;
-  
+
     try {
       const studentRef = doc(db, "students", editingStudent);
-  
-      // Save results under `results` collection using course_code as the document ID
+
       for (const courseCode in results) {
         const resultRef = doc(
           db,
@@ -94,34 +92,29 @@ const saveResults = async () => {
           { merge: true }
         );
       }
-  
-      // Update student's document with a reference to results
-      await updateDoc(studentRef, { results });
-  
-      // Check if all results are uploaded (all courses should have results)
-      const allResultsUploaded = filteredCourses.every((course) =>
-        results.hasOwnProperty(course.course_code)
-      );
-  
-      if (allResultsUploaded) {
-        // Update the resultSubmitted field in the lecturerTable
-        const lecturerRef = doc(db, "lecturers", studentRef.id);
-        await updateDoc(lecturerRef, { resultSubmitted: "Yes" });
-      }
-  
-      // ✅ Automatically update UI (No refresh needed)
+
+      const { totalUnits, totalPoints, GPA, failedCourses } = calculateGPA({
+        results,
+      });
+
+      await updateDoc(studentRef, {
+        results,
+        cgpa: GPA.toFixed(2), // Store the calculated GPA
+        carryOver: failedCourses.length > 0 ? "Yes" : "No", // Update carryover status
+      });
+
       setEditingStudent(null);
     } catch (error) {
       console.error("Error saving results: ", error);
     }
   };
-  
 
-  // Function to calculate the GPA for each student
+  // Function to calculate the GPA and carryover courses for each student
   const calculateGPA = (student) => {
     let totalUnits = 0;
     let totalPoints = 0;
-
+    let failedCourses = [];
+    
     filteredCourses.forEach((course) => {
       const score = student.results?.[course.course_code];
       const courseUnit = Number(course.units);
@@ -138,17 +131,20 @@ const saveResults = async () => {
         points = 2;
       } else if (score >= 40) {
         points = 1;
+      } 
+      // Consider marks below 40 as failed
+      else {
+        points = 0;
+        failedCourses.push(course.course_code); // Store the course code of the failed course
       }
 
-      // Multiply points by course unit
       totalUnits += courseUnit;
       totalPoints += points * courseUnit;
     });
 
-    // Calculate GPA
     const GPA = totalUnits > 0 ? totalPoints / totalUnits : 0;
 
-    return { totalUnits, totalPoints, GPA };
+    return { totalUnits, totalPoints, GPA, failedCourses };
   };
 
   return (
@@ -199,37 +195,45 @@ const saveResults = async () => {
               <th className="border px-4 py-2">TNU</th>
               <th className="border px-4 py-2">TCP</th>
               <th className="border px-4 py-2">GPA</th>
-              <th className="border px-4 py-2">Edit</th> {/* Edit column moved here */}
+              <th className="border px-4 py-2">Carry Over</th> {/* New Carry Over column */}
+              <th className="border px-4 py-2">Edit</th>
             </tr>
           </thead>
           <tbody>
             {filteredStudents.map((student) => {
-              const { totalUnits, totalPoints, GPA } = calculateGPA(student);
+              const { totalUnits, totalPoints, GPA, failedCourses } = calculateGPA(student);
               return (
                 <tr key={student.id} className="text-center hover:bg-gray-100">
                   <td className="border px-4 py-2">{student.name}</td>
                   <td className="border px-4 py-2">{student.matric_number}</td>
                   <td className="border px-4 py-2">{student.department}</td>
                   <td className="border px-4 py-2">{student.level}</td>
-                  {filteredCourses.map((course) => (
-                    <td key={course.id} className="border px-4 py-2">
-                      {editingStudent === student.id ? (
-                        <input
-                          type="number"
-                          value={results[course.course_code] || ""}
-                          onChange={(e) =>
-                            handleResultChange(course.course_code, e.target.value)
-                          }
-                          className="w-20 border rounded p-1"
-                        />
-                      ) : (
-                        student.results?.[course.course_code] || "N/A"
-                      )}
-                    </td>
-                  ))}
+                  {filteredCourses.map((course) => {
+                    const score = student.results?.[course.course_code] || 0;
+                    const isFailed = score < 40;
+                    return (
+                      <td key={course.id} className={`border px-4 py-2 ${isFailed ? 'bg-red-500 text-white' : ''}`}>
+                        {editingStudent === student.id ? (
+                          <input
+                            type="number"
+                            value={results[course.course_code] || ""}
+                            onChange={(e) =>
+                              handleResultChange(course.course_code, e.target.value)
+                            }
+                            className="w-20 border rounded p-1"
+                          />
+                        ) : (
+                          score || "N/A"
+                        )}
+                      </td>
+                    );
+                  })}
                   <td className="border px-4 py-2">{totalUnits}</td>
                   <td className="border px-4 py-2">{totalPoints}</td>
                   <td className="border px-4 py-2">{GPA.toFixed(2)}</td>
+                  <td className="border px-4 py-2">
+                    {failedCourses.length > 0 ? failedCourses.join(', ') : "None"}
+                  </td>
                   <td className="border px-4 py-2">
                     {editingStudent === student.id ? (
                       <button
