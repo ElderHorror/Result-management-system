@@ -28,7 +28,7 @@ const Section = () => {
         setLecturerCount(snapshot.size);
       });
 
-      onSnapshot(collection(db, "results"), (snapshot) => {
+      onSnapshot(collection(db, "students"), (snapshot) => {
         setResultCount(snapshot.size);
       });
     };
