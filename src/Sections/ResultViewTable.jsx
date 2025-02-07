@@ -14,6 +14,7 @@ const ResultViewTable = () => {
   const storedLevel = sessionStorage.getItem("selectedLevel") || "All"; // Get stored level
   const [filterLevel, setFilterLevel] = useState(storedLevel);
   const [filterSemester, setFilterSemester] = useState("All");
+  const [filterSession, setFilterSession] = useState("2023-2024"); // Default session
   const [results, setResults] = useState({});
   const [editingStudent, setEditingStudent] = useState(null);
 
@@ -50,11 +51,12 @@ const ResultViewTable = () => {
       (filterSemester === "All" || course.semester === filterSemester)
   );
 
-  // Filter students based on selected level & semester
+  // Filter students based on selected level, semester, and session
   const filteredStudents = students.filter(
     (student) =>
       (filterLevel === "All" || student.level === filterLevel) &&
-      (filterSemester === "All" || student.semester === filterSemester)
+      (filterSemester === "All" || student.semester === filterSemester) &&
+      student.sessionYear === filterSession // Filter by session
   );
 
   // Handle editing student
@@ -109,15 +111,16 @@ const ResultViewTable = () => {
     }
   };
 
-  // Function to calculate the GPA and carryover courses for each student
+  // Function to calculate the GPA, TNU, and TCP for each student
   const calculateGPA = (student) => {
     let totalUnits = 0;
     let totalPoints = 0;
     let failedCourses = [];
-    
+
+    // Check current results
     filteredCourses.forEach((course) => {
       const score = student.results?.[course.course_code];
-      const courseUnit = Number(course.units);
+      const courseUnit = Number(course.units); // Get the unit of the course
 
       // Calculate points based on score
       let points = 0;
@@ -131,7 +134,7 @@ const ResultViewTable = () => {
         points = 2;
       } else if (score >= 40) {
         points = 1;
-      } 
+      }
       // Consider marks below 40 as failed
       else {
         points = 0;
@@ -142,9 +145,43 @@ const ResultViewTable = () => {
       totalPoints += points * courseUnit;
     });
 
+    // Include carryover courses
+    const carryOverCourses = student.results?.carryOverCourses || [];
+    carryOverCourses.forEach((courseCode) => {
+      const course = courses.find((c) => c.course_code === courseCode);
+      if (course) {
+        const courseUnit = Number(course.units);
+        totalUnits += courseUnit; // Assuming carryover courses count towards total units
+        failedCourses.push(courseCode); // Include in failed courses if it's a carryover
+      }
+    });
+
     const GPA = totalUnits > 0 ? totalPoints / totalUnits : 0;
 
     return { totalUnits, totalPoints, GPA, failedCourses };
+  };
+
+  // Promote student to the next level
+  const promoteStudent = async (student) => {
+    const newLevel = (Number(student.level) + 100).toString(); // Assuming levels are incremented by 100
+    const studentRef = doc(db, "students", student.id);
+
+    // Get carryover courses and failed courses
+    const carryOverCourses = student.results?.carryOverCourses || [];
+    const { failedCourses } = calculateGPA(student);
+
+    // Update student level and carry over courses
+    await updateDoc(studentRef, {
+      level: newLevel,
+      results: {
+        ...student.results,
+        carryOverCourses: [...new Set([...carryOverCourses, ...failedCourses])], // Merge carryover courses without duplicates
+      },
+    });
+
+    // Optionally, you can create a separate document for each level's results
+    const resultsRef = doc(db, "students", student.id, "results", newLevel);
+    await setDoc(resultsRef, student.results); // Store the previous results under the new level
   };
 
   return (
@@ -176,6 +213,19 @@ const ResultViewTable = () => {
           <option value="1">1st Semester</option>
           <option value="2">2nd Semester</option>
         </select>
+
+        <label className="ml-4 mr-2">Session:</label>
+        <select
+          value={filterSession}
+          onChange={(e) => setFilterSession(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="2021-2022">2021/2022</option>
+          <option value="2022-2023">2022/2023</option>
+          <option value="2023-2024">2023/2024</option>
+          <option value="2024-2025">2024/2025</option>
+          {/* Add more sessions as needed */}
+        </select>
       </div>
 
       {/* Result Table */}
@@ -195,13 +245,16 @@ const ResultViewTable = () => {
               <th className="border px-4 py-2">TNU</th>
               <th className="border px-4 py-2">TCP</th>
               <th className="border px-4 py-2">GPA</th>
-              <th className="border px-4 py-2">Carry Over</th> {/* New Carry Over column */}
+              <th className="border px-4 py-2">Carry Over</th>
               <th className="border px-4 py-2">Edit</th>
+              <th className="border px-4 py-2">Promote</th>{" "}
+              {/* New Promote column */}
             </tr>
           </thead>
           <tbody>
             {filteredStudents.map((student) => {
-              const { totalUnits, totalPoints, GPA, failedCourses } = calculateGPA(student);
+              const { totalUnits, totalPoints, GPA, failedCourses } =
+                calculateGPA(student);
               return (
                 <tr key={student.id} className="text-center hover:bg-gray-100">
                   <td className="border px-4 py-2">{student.name}</td>
@@ -210,15 +263,23 @@ const ResultViewTable = () => {
                   <td className="border px-4 py-2">{student.level}</td>
                   {filteredCourses.map((course) => {
                     const score = student.results?.[course.course_code] || 0;
-                    const isFailed = score < 40;
+                    const isFailed = score < 40; // Check if the score is below passing
                     return (
-                      <td key={course.id} className={`border px-4 py-2 ${isFailed ? 'bg-red-500 text-white' : ''}`}>
+                      <td
+                        key={course.id}
+                        className={`border px-4 py-2 ${
+                          isFailed ? "bg-red-500 text-white" : ""
+                        }`}
+                      >
                         {editingStudent === student.id ? (
                           <input
                             type="number"
                             value={results[course.course_code] || ""}
                             onChange={(e) =>
-                              handleResultChange(course.course_code, e.target.value)
+                              handleResultChange(
+                                course.course_code,
+                                e.target.value
+                              )
                             }
                             className="w-20 border rounded p-1"
                           />
@@ -228,11 +289,15 @@ const ResultViewTable = () => {
                       </td>
                     );
                   })}
-                  <td className="border px-4 py-2">{totalUnits}</td>
-                  <td className="border px-4 py-2">{totalPoints}</td>
+                  <td className="border px-4 py-2">{totalUnits}</td>{" "}
+                  {/* Total Units (TNU) */}
+                  <td className="border px-4 py-2">{totalPoints}</td>{" "}
+                  {/* Total Credit Points (TCP) */}
                   <td className="border px-4 py-2">{GPA.toFixed(2)}</td>
                   <td className="border px-4 py-2">
-                    {failedCourses.length > 0 ? failedCourses.join(', ') : "None"}
+                    {failedCourses.length > 0
+                      ? failedCourses.join(", ")
+                      : "None"}
                   </td>
                   <td className="border px-4 py-2">
                     {editingStudent === student.id ? (
@@ -250,6 +315,14 @@ const ResultViewTable = () => {
                         Edit
                       </button>
                     )}
+                  </td>
+                  <td className="border px-4 py-2">
+                    <button
+                      onClick={() => promoteStudent(student)}
+                      className="bg-yellow-500 text-white py-1 px-4 rounded"
+                    >
+                      Promote
+                    </button>
                   </td>
                 </tr>
               );
