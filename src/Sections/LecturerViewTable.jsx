@@ -124,32 +124,47 @@ const LecturerViewTable = () => {
     }
   };
 
-  // Function to handle course code selection and update course name
-  // Function to handle course code selection and update course name in the edit modal
-  const handleCourseCodeChange = (courseCode) => {
+  // Function to handle course code selection and update course name in the add modal
+  const handleCourseCodeChange = (courseCode, isEditModal = false) => {
     const selectedCourse = courses.find(
       (course) => course.course_code === courseCode
     );
     if (selectedCourse) {
-      setSelectedLecturer({
-        ...selectedLecturer,
-        course_code: selectedCourse.course_code,
-        course_name: selectedCourse.course_name,
-      });
+      if (isEditModal) {
+        setSelectedLecturer({
+          ...selectedLecturer,
+          course_code: selectedCourse.course_code,
+          course_name: selectedCourse.course_name,
+        });
+      } else {
+        setNewLecturer({
+          ...newLecturer,
+          course_code: selectedCourse.course_code,
+          course_name: selectedCourse.course_name,
+        });
+      }
     }
   };
 
-  // Function to handle course name selection and update course code in the edit modal
-  const handleCourseNameChange = (courseName) => {
+  // Function to handle course name selection and update course code in the add modal
+  const handleCourseNameChange = (courseName, isEditModal = false) => {
     const selectedCourse = courses.find(
       (course) => course.course_name === courseName
     );
     if (selectedCourse) {
-      setSelectedLecturer({
-        ...selectedLecturer,
-        course_code: selectedCourse.course_code,
-        course_name: selectedCourse.course_name,
-      });
+      if (isEditModal) {
+        setSelectedLecturer({
+          ...selectedLecturer,
+          course_code: selectedCourse.course_code,
+          course_name: selectedCourse.course_name,
+        });
+      } else {
+        setNewLecturer({
+          ...newLecturer,
+          course_code: selectedCourse.course_code,
+          course_name: selectedCourse.course_name,
+        });
+      }
     }
   };
 
@@ -352,7 +367,7 @@ const LecturerViewTable = () => {
               <select
                 className="w-full px-3 py-2 border rounded-lg"
                 value={selectedLecturer.course_code}
-                onChange={(e) => handleCourseCodeChange(e.target.value)}
+                onChange={(e) => handleCourseCodeChange(e.target.value, true)}
               >
                 <option value="">Select Course Code</option>
                 {courses.map((course) => (
@@ -368,7 +383,7 @@ const LecturerViewTable = () => {
               <select
                 className="w-full px-3 py-2 border rounded-lg"
                 value={selectedLecturer.course_name}
-                onChange={(e) => handleCourseNameChange(e.target.value)}
+                onChange={(e) => handleCourseNameChange(e.target.value, true)}
               >
                 <option value="">Select Course Title</option>
                 {courses.map((course) => (

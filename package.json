@@ -9,8 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "^11.2.0",
     "@fontsource/argentum-sans": "^5.1.0",
+    "firebase": "^11.2.0",
+    "framer-motion": "^12.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.4.0",

@@ -1,9 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaPlus } from "react-icons/fa"; // Import the Plus icon
 import { Link } from "react-router-dom";
-import { Links } from "react-router-dom";
 
 export default function StudentLevels({ data, title, count, view }) {
+  // State to manage the selected session
+  const [selectedSession, setSelectedSession] = useState(() => {
+    return sessionStorage.getItem("selectedSession") || "2024-2025"; // Default session
+  });
+
+  // Function to handle session change
+  const handleSessionChange = (e) => {
+    const newSession = e.target.value;
+    setSelectedSession(newSession);
+    sessionStorage.setItem("selectedSession", newSession); // Save to sessionStorage
+  };
+
   return (
     <div className="flex flex-col h-[80%] bg-gray-200 px-4 sm:px-10 lg:px-8">
       {/* Dropdown Section (Session and Semester) */}
@@ -16,7 +27,8 @@ export default function StudentLevels({ data, title, count, view }) {
               <span className="text-gray-700 font-bold">Session:</span>
               <select
                 className="px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                defaultValue="2024-2025" // Default selected session
+                value={selectedSession} // Use state value
+                onChange={handleSessionChange} // Handle change
               >
                 {Array.from({ length: 7 }, (_, i) => {
                   const startYear = 2018 + i;
@@ -42,14 +54,6 @@ export default function StudentLevels({ data, title, count, view }) {
               </select>
             </div>
           </div>
-
-          {/* Plus Button (Far Right) */}
-          {/* <button
-            className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            aria-label="Add"
-          >
-            <FaPlus className="w-5 h-5" /> 
-          </button> */}
         </div>
       </div>
 
@@ -81,9 +85,13 @@ export default function StudentLevels({ data, title, count, view }) {
                 <td className="border border-gray-300 px-4 py-2">
                   <Link
                     to={view}
-                    onClick={() =>
-                      sessionStorage.setItem("selectedLevel", item.level)
-                    } // Store level in sessionStorage
+                    onClick={() => {
+                      sessionStorage.setItem("selectedLevel", item.level); // Store level in sessionStorage
+                      sessionStorage.setItem(
+                        "selectedSession",
+                        selectedSession
+                      ); // Store selected session
+                    }}
                     className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
                     View

@@ -32,6 +32,11 @@ export default function CourseView({ title }) {
     semester: "",
   });
 
+  // Predefined options for dropdowns
+  const departments = ["Computer Science", "Software Engineering", "Cyber Security"];
+  const levels = [100, 200, 300, 400];
+  const semesters = ["First", "Second"];
+
   const columns = [
     { key: "course_code", header: "Course Code" },
     { key: "course_name", header: "Course Title" },
@@ -65,7 +70,6 @@ export default function CourseView({ title }) {
 
     return () => unsubscribe();
   }, [selectedLevel]); // Re-run when selectedLevel changes
-  // Re-run when selectedLevel changes
 
   const handleSearch = () => {
     const filtered = courses.filter(
@@ -78,11 +82,11 @@ export default function CourseView({ title }) {
 
   const handleAdd = () => {
     setNewCourse({
-      code: "",
-      title: "",
+      course_code: "",
+      course_name: "",
       level: selectedLevel,
       department: "",
-      credit_units: "",
+      units: "",
       semester: "",
     });
     setIsAddModalOpen(true);
@@ -142,7 +146,7 @@ export default function CourseView({ title }) {
               }}
             >
               <option value="all">All Courses</option>
-              {[100, 200, 300, 400].map((level) => (
+              {levels.map((level) => (
                 <option key={level} value={level}>
                   {level}
                 </option>
@@ -226,33 +230,93 @@ export default function CourseView({ title }) {
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
         <h2 className="text-xl font-bold mb-4">Add Course</h2>
         <form onSubmit={handleAddSubmit}>
-          {columns.map((col) => (
-            <div key={col.key} className="mb-4">
-              <label>{col.header}</label>
-              {col.key === "semester" ? (
-                <select
-                  className="w-full px-3 py-2 border rounded-lg"
-                  value={newCourse[col.key] || ""}
-                  onChange={(e) =>
-                    setNewCourse({ ...newCourse, [col.key]: e.target.value })
-                  }
-                >
-                  <option value="">Select Semester</option>
-                  <option value="First">First</option>
-                  <option value="Second">Second</option>
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded-lg"
-                  value={newCourse[col.key] || ""}
-                  onChange={(e) =>
-                    setNewCourse({ ...newCourse, [col.key]: e.target.value })
-                  }
-                />
-              )}
-            </div>
-          ))}
+          <div className="mb-4">
+            <label>Course Code</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newCourse.course_code}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, course_code: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="mb-4">
+            <label>Course Title</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newCourse.course_name}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, course_name: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="mb-4">
+            <label>Level</label>
+            <select
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newCourse.level}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, level: e.target.value })
+              }
+            >
+              {levels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label>Department</label>
+            <select
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newCourse.department}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, department: e.target.value })
+              }
+            >
+              {departments.map((department) => (
+                <option key={department} value={department}>
+                  {department}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <label>Credit Units</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newCourse.units}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, units: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="mb-4">
+            <label>Semester</label>
+            <select
+              className="w-full px-3 py-2 border rounded-lg"
+              value={newCourse.semester}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, semester: e.target.value })
+              }
+            >
+              {semesters.map((semester) => (
+                <option key={semester} value={semester}>
+                  {semester}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             type="submit"
             className="bg-blue-500 text-white px-4 py-2 rounded-lg"
@@ -267,39 +331,111 @@ export default function CourseView({ title }) {
         <h2 className="text-xl font-bold mb-4">Edit Course</h2>
         {selectedCourse ? (
           <form onSubmit={handleEditSubmit}>
-            {columns.map((col) => (
-              <div key={col.key} className="mb-4">
-                <label>{col.header}</label>
-                {col.key === "semester" ? (
-                  <select
-                    className="w-full px-3 py-2 border rounded-lg"
-                    value={selectedCourse[col.key] || ""}
-                    onChange={(e) =>
-                      setSelectedCourse({
-                        ...selectedCourse,
-                        [col.key]: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Select Semester</option>
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    value={selectedCourse[col.key] || ""}
-                    onChange={(e) =>
-                      setSelectedCourse({
-                        ...selectedCourse,
-                        [col.key]: e.target.value,
-                      })
-                    }
-                  />
-                )}
-              </div>
-            ))}
+            <div className="mb-4">
+              <label>Course Code</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedCourse.course_code}
+                onChange={(e) =>
+                  setSelectedCourse({
+                    ...selectedCourse,
+                    course_code: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="mb-4">
+              <label>Course Title</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedCourse.course_name}
+                onChange={(e) =>
+                  setSelectedCourse({
+                    ...selectedCourse,
+                    course_name: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="mb-4">
+              <label>Level</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedCourse.level}
+                onChange={(e) =>
+                  setSelectedCourse({
+                    ...selectedCourse,
+                    level: e.target.value,
+                  })
+                }
+              >
+                {levels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label>Department</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedCourse.department}
+                onChange={(e) =>
+                  setSelectedCourse({
+                    ...selectedCourse,
+                    department: e.target.value,
+                  })
+                }
+              >
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label>Credit Units</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedCourse.units}
+                onChange={(e) =>
+                  setSelectedCourse({
+                    ...selectedCourse,
+                    units: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="mb-4">
+              <label>Semester</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={selectedCourse.semester}
+                onChange={(e) =>
+                  setSelectedCourse({
+                    ...selectedCourse,
+                    semester: e.target.value,
+                  })
+                }
+              >
+                {semesters.map((sem) => (
+                  <option key={sem} value={sem}>
+                    {sem}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               type="submit"
               className="bg-green-500 text-white px-4 py-2 rounded-lg"
