@@ -56,7 +56,7 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
           <h2 className="text-sm text-gray-400 font-bold mt-4">APPEARANCE</h2>
           <ul className="space-y-2">
             {/* Level Dropdown */}
-            <li>
+            {/* <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
                 onClick={() => toggleDropdown("level")}
@@ -82,10 +82,10 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
                   ))}
                 </ul>
               )}
-            </li>
+            </li> */}
 
             {/* Courses Dropdown */}
-            <li>
+            {/* <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
                 onClick={() => toggleDropdown("courses")}
@@ -110,10 +110,10 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
                   ))}
                 </ul>
               )}
-            </li>
+            </li> */}
 
             {/* Students Dropdown */}
-            <li>
+            {/* <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
                 onClick={() => toggleDropdown("students")}
@@ -138,10 +138,10 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
                   ))}
                 </ul>
               )}
-            </li>
+            </li> */}
 
             {/* Results Dropdown */}
-            <li>
+            {/* <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
                 onClick={() => toggleDropdown("results")}
@@ -166,7 +166,7 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
                   ))}
                 </ul>
               )}
-            </li>
+            </li> */}
 
             {/* Change Password (No Dropdown) */}
             {/* <li className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer">
@@ -177,12 +177,12 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
         </nav>
 
         {/* Sign Out Button (Always at the Bottom) */}
-        <div className="p-4 mt-auto">
+        {/* <div className="p-4 mt-auto">
           <button className="hover:bg-[#441752] p-3 rounded flex items-center w-full cursor-pointer">
             <FiLogOut size={20} />
             <span className="px-4">Sign Out</span>
           </button>
-        </div>
+        </div> */}
       </aside>
     </>
   );
