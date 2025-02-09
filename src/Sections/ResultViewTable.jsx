@@ -17,7 +17,7 @@ const ResultViewTable = () => {
   const [filterLevel, setFilterLevel] = useState(storedLevel);
   const [filterSemester, setFilterSemester] = useState("All");
   const [filterSession, setFilterSession] = useState(() => {
-    return sessionStorage.getItem("selectedSession") || "2023-2024"; // Default session
+    return sessionStorage.getItem("selectedSession") || "2020-2021"; // Default session
   });
   const [results, setResults] = useState({});
   const [editingStudent, setEditingStudent] = useState(null);
@@ -283,7 +283,7 @@ const ResultViewTable = () => {
           onChange={(e) => handleLevelChange(e.target.value)}
           className="border p-2 rounded"
         >
-          <option value="All">All Levels</option>
+          
           <option value="100">100</option>
           <option value="200">200</option>
           <option value="300">300</option>
