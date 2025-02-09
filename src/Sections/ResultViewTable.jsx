@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { db } from "../../firebaseConfig"; // Adjust path if needed
 import {
   collection,
@@ -7,6 +7,8 @@ import {
   updateDoc,
   getDoc,
 } from "firebase/firestore";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const ResultViewTable = () => {
   const [courses, setCourses] = useState([]);
@@ -21,6 +23,38 @@ const ResultViewTable = () => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [isPromoting, setIsPromoting] = useState(false); // For promotion loading state
   const [promotionStatus, setPromotionStatus] = useState(""); // For promotion status feedback
+
+  // Create a ref for the table container
+  const tableRef = useRef(null);
+
+  // PDF Download Handler
+  const handleDownloadPDF = async () => {
+    if (!tableRef.current) return;
+
+    try {
+      const input = tableRef.current;
+      const canvas = await html2canvas(input, {
+        scale: 2, // Increase for better resolution
+        useCORS: true,
+        logging: true,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "landscape", // Use landscape for wider tables
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgWidth = 280; // A4 width in mm (landscape)
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save(`results_${filterLevel}_${filterSession}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
+  };
 
   // Fetch courses from Firebase
   useEffect(() => {
@@ -241,8 +275,8 @@ const ResultViewTable = () => {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Student Results</h2>
 
-      {/* Filter Dropdowns and Promote Button */}
-      <div className="mb-4 flex items-center gap-4">
+      {/* Filter Dropdowns and Buttons */}
+      <div className="mb-4 flex items-center gap-4 flex-wrap">
         <label className="mr-2">Level:</label>
         <select
           value={filterLevel}
@@ -278,6 +312,26 @@ const ResultViewTable = () => {
           <option value="2023-2024">2023/2024</option>
           <option value="2024-2025">2024/2025</option>
         </select>
+
+        {/* Download PDF Button */}
+        <button
+          onClick={handleDownloadPDF}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Download PDF
+        </button>
 
         {/* Promote Button */}
         <button
@@ -316,7 +370,7 @@ const ResultViewTable = () => {
       </div>
 
       {/* Result Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" ref={tableRef}>
         <table className="min-w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-200">
@@ -354,14 +408,9 @@ const ResultViewTable = () => {
                 const { totalUnits, totalPoints, GPA } = calculateGPA(levelResults);
 
                 return (
-                  <tr
-                    key={student.id}
-                    className="text-center hover:bg-gray-100"
-                  >
+                  <tr key={student.id} className="text-center hover:bg-gray-100">
                     <td className="border px-4 py-2">{student.name}</td>
-                    <td className="border px-4 py-2">
-                      {student.matric_number}
-                    </td>
+                    <td className="border px-4 py-2">{student.matric_number}</td>
                     <td className="border px-4 py-2">{student.department}</td>
                     <td className="border px-4 py-2">{student.level}</td>
                     {filteredCourses.map((course) => {
@@ -379,10 +428,7 @@ const ResultViewTable = () => {
                               type="number"
                               value={results[course.course_code] || ""}
                               onChange={(e) =>
-                                handleResultChange(
-                                  course.course_code,
-                                  e.target.value
-                                )
+                                handleResultChange(course.course_code, e.target.value)
                               }
                               min="0"
                               max="100"
@@ -401,8 +447,7 @@ const ResultViewTable = () => {
                       {student.CGPA ? Number(student.CGPA).toFixed(2) : "N/A"}
                     </td>
                     <td className="border px-4 py-2">
-                      {student.carryOverCourses &&
-                      student.carryOverCourses.length > 0
+                      {student.carryOverCourses && student.carryOverCourses.length > 0
                         ? student.carryOverCourses.join(", ")
                         : "None"}
                     </td>
