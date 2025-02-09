@@ -22,7 +22,7 @@ const App = () => {
     {
       title: "Step 1: Add Courses",
       description: [
-        "Go to the Courses tab, select any level, and click on the Add button. Input all courses, units, and related data. This data will automatically link to the Results database for score input.",
+        // "Go to the Courses tab, select any level, and click on the Add button. Input all courses, units, and related data. This data will automatically link to the Results database for score input.",
         "Go to the <strong>Courses</strong> tab",
         "Select any level <strong>View</strong> tab",
         "Click on the <strong>Add</strong> button",
@@ -32,7 +32,7 @@ const App = () => {
         "The course added will reflect in the table",
       ],
       images: [
-        "/courses/coursesFilled.png",
+        // "/courses/coursesFilled.png",
         "/courses/course-direction.png",
         "/courses/course_view.png",
         "/courses/add_modal.png",
