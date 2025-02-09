@@ -307,6 +307,9 @@ const ResultViewTable = () => {
           onChange={(e) => setFilterSession(e.target.value)}
           className="border p-2 rounded"
         >
+          <option value="2018-2019">2018/2019</option>
+          <option value="2019-2020">2019/2020</option>
+          <option value="2020-2021">2020/2021</option>
           <option value="2021-2022">2021/2022</option>
           <option value="2022-2023">2022/2023</option>
           <option value="2023-2024">2023/2024</option>
