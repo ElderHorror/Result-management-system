@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import SideBar from "./Component/SideBar";
 import Header from "./Component/Header";
 import Section from "./Component/Section";
@@ -9,6 +9,14 @@ import { FaCheckCircle, FaArrowRight } from "react-icons/fa";
 const App = () => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const contentRef = useRef(null);
+
+  // Reset scroll position when step changes
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [currentStep]);
 
   const steps = [
     {
@@ -49,10 +57,10 @@ const App = () => {
       images: [
         "../../public/lecturer/homepage.png",
         "../../public/lecturer/lecturer_tab.png",
-        "../../public/lecturer/level_view.png", 
-        "../../public/lecturer/add_modal.png", 
-        "../../public/lecturer/extened_add_modal.png", 
-        "../../public/lecturer/filled_extended_add_modal.png", 
+        "../../public/lecturer/level_view.png",
+        "../../public/lecturer/add_modal.png",
+        "../../public/lecturer/extened_add_modal.png",
+        "../../public/lecturer/filled_extended_add_modal.png",
         "../../public/lecturer/add_lecturer.png",
         "../../public/lecturer/filled_table.png",
       ],
@@ -72,8 +80,12 @@ const App = () => {
       images: [
         "../../public/students/homepage.png",
         "../../public/students/students_tab.png",
-        "../../public/students/level_view.png",
-        "../../public/students/student_input.png",
+        "../../public/students/student_view.png",
+        "../../public/students/add_modal.png",
+        "../../public/students/extended_add_modal.png",
+        "../../public/students/filled_extended_add_modal.png",
+        "../../public/students/add_student.png",
+        "../../public/students/filled_table.png",
       ],
     },
     {
@@ -81,16 +93,24 @@ const App = () => {
       description: [
         "Return to the Homepage",
         "Go to the Results tab",
-        "Select the Level tab",
+        "Select the corresponding level view tab",
+        "Click on the edit button",
         "Input student scores for each course.",
+        "Proceed to save student scores for each course.",
         "The system will automatically calculate TNU, TCP, GPA, and CGPA.",
+        "To move over to the next Session, Click the promote button",
+        "This data updates the table and the Students data is then moved to the next level",
       ],
       images: [
         "../../public/results/homepage.png",
         "../../public/results/results_tab.png",
-        "../../public/results/level_view.png",
-        "../../public/results/score_input.png",
-        "../../public/results/calculations.png",
+        "../../public/results/result_view.png",
+        "../../public/results/edit_results.png",
+        "../../public/results/fill_table.png",
+        "../../public/results/save_results.png",
+        "../../public/results/filled_table.png",
+        "../../public/results/promote_students.png",
+        "../../public/results/next_level.png",
       ],
     },
   ];
@@ -100,6 +120,14 @@ const App = () => {
       setCurrentStep(currentStep + 1);
     } else {
       setIsTutorialOpen(false); // Close modal after last step
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      setIsTutorialOpen(false); // Close modal if on the first step
     }
   };
 
@@ -184,7 +212,10 @@ const App = () => {
                 </h3>
 
                 {/* Scrollable Content for All Steps */}
-                <div className="overflow-y-auto max-h-[50vh] w-full px-4">
+                <div
+                  className="overflow-y-auto max-h-[50vh] w-full px-4"
+                  ref={contentRef}
+                >
                   {steps[currentStep - 1].description.map((desc, index) => (
                     <div key={index} className="mb-8">
                       <p
@@ -207,10 +238,10 @@ const App = () => {
             {/* Navigation Buttons */}
             <div className="mt-8 flex justify-between">
               <button
-                onClick={() => setIsTutorialOpen(false)}
+                onClick={handlePrevStep}
                 className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition duration-300"
               >
-                Close
+                Prev
               </button>
               <button
                 onClick={handleNextStep}

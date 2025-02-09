@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { MdSubject, MdOutlineGroups } from "react-icons/md";
 import { TbAlertSquareRoundedFilled } from "react-icons/tb";
 import { RiExchangeBoxFill } from "react-icons/ri";
 import { IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
+import { Link } from "react-router-dom";
 import { MdOutlineDashboardCustomize } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import { SiGoogleclassroom } from "react-icons/si";
@@ -44,10 +45,12 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
         <nav className="flex flex-col p-4 space-y-2 flex-grow overflow-y-auto">
           <h2 className="text-sm text-gray-400 font-bold">MAIN CATEGORY</h2>
           <ul>
-            <li className="flex items-center hover:bg-[#441752] p-3 rounded cursor-pointer">
-              <MdOutlineDashboardCustomize size={20} />
-              <span className="px-4">Dashboard</span>
-            </li>
+            <Link to="/">
+              <li className="flex items-center hover:bg-[#441752] p-3 rounded cursor-pointer">
+                <MdOutlineDashboardCustomize size={20} />
+                <span className="px-4">Dashboard</span>
+              </li>
+            </Link>
           </ul>
 
           <h2 className="text-sm text-gray-400 font-bold mt-4">APPEARANCE</h2>
@@ -56,19 +59,20 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
             <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
-                onClick={() => toggleDropdown('level')}
+                onClick={() => toggleDropdown("level")}
               >
                 <SiGoogleclassroom size={20} />
                 <span className="px-4">Lecturer</span>
-                {openDropdown === 'level' ? (
+                {openDropdown === "level" ? (
                   <IoIosArrowDown className="ml-auto" />
                 ) : (
                   <IoIosArrowForward className="ml-auto" />
                 )}
               </div>
-              {openDropdown === 'level' && (
+              {openDropdown === "level" && (
                 <ul className="pl-8 mt-2 space-y-2">
                   {[100, 200, 300, 400].map((level) => (
+                    
                     <li
                       key={level}
                       className="hover:bg-[#441752] p-2 rounded cursor-pointer"
@@ -84,17 +88,17 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
             <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
-                onClick={() => toggleDropdown('courses')}
+                onClick={() => toggleDropdown("courses")}
               >
                 <MdSubject size={20} />
                 <span className="px-4">Courses</span>
-                {openDropdown === 'courses' ? (
+                {openDropdown === "courses" ? (
                   <IoIosArrowDown className="ml-auto" />
                 ) : (
                   <IoIosArrowForward className="ml-auto" />
                 )}
               </div>
-              {openDropdown === 'courses' && (
+              {openDropdown === "courses" && (
                 <ul className="pl-8 mt-2 space-y-2">
                   {[100, 200, 300, 400].map((course) => (
                     <li
@@ -112,17 +116,17 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
             <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
-                onClick={() => toggleDropdown('students')}
+                onClick={() => toggleDropdown("students")}
               >
                 <MdOutlineGroups size={20} />
                 <span className="px-4">Students</span>
-                {openDropdown === 'students' ? (
+                {openDropdown === "students" ? (
                   <IoIosArrowDown className="ml-auto" />
                 ) : (
                   <IoIosArrowForward className="ml-auto" />
                 )}
               </div>
-              {openDropdown === 'students' && (
+              {openDropdown === "students" && (
                 <ul className="pl-8 mt-2 space-y-2">
                   {[100, 200, 300, 400].map((student) => (
                     <li
@@ -140,17 +144,17 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
             <li>
               <div
                 className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer"
-                onClick={() => toggleDropdown('results')}
+                onClick={() => toggleDropdown("results")}
               >
                 <TbAlertSquareRoundedFilled size={20} />
                 <span className="px-4">Results</span>
-                {openDropdown === 'results' ? (
+                {openDropdown === "results" ? (
                   <IoIosArrowDown className="ml-auto" />
                 ) : (
                   <IoIosArrowForward className="ml-auto" />
                 )}
               </div>
-              {openDropdown === 'results' && (
+              {openDropdown === "results" && (
                 <ul className="pl-8 mt-2 space-y-2">
                   {[100, 200, 300, 400].map((result) => (
                     <li
@@ -165,10 +169,10 @@ const SideBar = ({ isOpen, toggleSidebar }) => {
             </li>
 
             {/* Change Password (No Dropdown) */}
-            <li className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer">
+            {/* <li className="hover:bg-[#441752] p-3 rounded flex items-center cursor-pointer">
               <RiExchangeBoxFill size={20} />
               <span className="px-4">Change Password</span>
-            </li>
+            </li> */}
           </ul>
         </nav>
 

@@ -68,7 +68,9 @@ const ResultView = () => {
             Admin Dashboard
           </h1>
           <div className="flex flex-row gap-1 px-10 pt-2 pb-8 text-base text-gray-700">
-            <p>Home</p>
+            <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
+                        <p>Home</p>
+                      </Link>
             <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
               <IoIosArrowForward size={23} className="pt-1" />
               Admin

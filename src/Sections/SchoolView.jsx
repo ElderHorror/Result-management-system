@@ -221,7 +221,7 @@ export default function StudentView({ title }) {
           </div>
         </div>
 
-        <div className="flex gap-4">
+        {/* <div className="flex gap-4">
           <div className="relative">
             <input
               type="text"
@@ -249,7 +249,7 @@ export default function StudentView({ title }) {
               onClick={handleSearch}
             />
           </div>
-        </div>
+        </div> */}
 
         <button
           className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600"

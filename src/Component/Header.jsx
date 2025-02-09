@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { FaBell, FaEnvelope, FaSearch } from "react-icons/fa";
 import { IoSettingsSharp } from "react-icons/io5";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   // State to manage pop-up visibility
@@ -9,28 +10,35 @@ const Header = () => {
   const [showEnvelopePopup, setShowEnvelopePopup] = useState(false);
 
   return (
-    <header className="bg-white shadow p-4 w-full flex flex-col md:flex-row justify-between items-center px-4 md:px-10 
-      fixed md:relative top-0 left-0 z-30 md:static">
-      
-      <img src="/chrisland logo.svg" alt="Chrisland University Logo" className="h-12 w-auto" />
-      
+    <header
+      className="bg-white shadow p-4 w-full flex flex-col md:flex-row justify-between items-center px-4 md:px-10 
+      fixed md:relative top-0 left-0 z-30 md:static"
+    >
+      <Link to="/" className="flex flex-row gap-1 hover:text-purple-400">
+        <img
+          src="/chrisland logo.svg"
+          alt="Chrisland University Logo"
+          className="h-12 w-auto"
+        />
+      </Link>
+
       <div className="flex items-center md:justify-between w-full gap-3 md:w-[75%] mt-4 md:mt-0">
         {/* Search bar */}
-        <div className="flex items-center w-full md:w-[60%] relative">
-          <input 
-            type="text" 
-            placeholder="Search..." 
+        {/* <div className="flex items-center w-full md:w-[60%] relative">
+          <input
+            type="text"
+            placeholder="Search..."
             className="flex-grow p-2 focus:outline-none rounded-3xl pl-4 bg-gray-200"
           />
           <span className="absolute right-0 top-0 px-4 py-2 text-gray-600">
             <FaSearch size={20} />
           </span>
-        </div>
-        
+        </div> */}
+
         {/* Notification and settings icons */}
         <div className="flex space-x-2 md:space-x-4 relative">
           {/* Settings Button */}
-          <button 
+          {/* <button
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 relative"
             onClick={() => setShowSettingsPopup(!showSettingsPopup)}
             onMouseEnter={() => setShowSettingsPopup(true)}
@@ -42,10 +50,10 @@ const Header = () => {
                 <p className="text-sm text-gray-700">Settings</p>
               </div>
             )}
-          </button>
+          </button> */}
 
           {/* Notification Button */}
-          <button 
+          {/* <button 
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 relative"
             onClick={() => setShowNotificationPopup(!showNotificationPopup)}
             onMouseEnter={() => setShowNotificationPopup(true)}
@@ -57,10 +65,10 @@ const Header = () => {
                 <p className="text-sm text-gray-700">No new notifications</p>
               </div>
             )}
-          </button>
+          </button> */}
 
           {/* Envelope Button */}
-          <button 
+          {/* <button 
             className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 relative"
             onClick={() => setShowEnvelopePopup(!showEnvelopePopup)}
             onMouseEnter={() => setShowEnvelopePopup(true)}
@@ -72,7 +80,7 @@ const Header = () => {
                 <p className="text-sm text-gray-700">No new messages</p>
               </div>
             )}
-          </button>
+          </button> */}
         </div>
       </div>
     </header>
