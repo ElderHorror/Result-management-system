@@ -32,7 +32,7 @@ const App = () => {
         "The course added will reflect in the table",
       ],
       images: [
-        "../public/courses/coursesFilled.png",
+        "../../public/courses/coursesFilled.png",
         "../../public/courses/course-direction.png",
         "../../public/courses/course_view.png",
         "../../public/courses/add_modal.png",
