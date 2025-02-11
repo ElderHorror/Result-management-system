@@ -20,6 +20,9 @@ export default function CourseView({ title }) {
   const [selectedLevel, setSelectedLevel] = useState(
     sessionStorage.getItem("selectedLevel") || "100" // Default to 100 if nothing is stored
   );
+  const [selectedSemester, setSelectedSemester] = useState(
+    sessionStorage.getItem("selectedSemester") || "First" // Default to "First" if nothing is stored
+  );
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -27,13 +30,13 @@ export default function CourseView({ title }) {
     course_code: "",
     course_name: "",
     level: selectedLevel,
-    department: "",
+    department: "All Departments", // Default to first department
     units: "",
-    semester: "",
+    semester: selectedSemester, // Default to selected semester
   });
 
   // Predefined options for dropdowns
-  const departments = ["Computer Science", "Software Engineering", "Cyber Security"];
+  const departments = ["All Departments", "Computer Science", "Software Engineering", "Cyber Security"];
   const levels = [100, 200, 300, 400];
   const semesters = ["First", "Second"];
 
@@ -51,11 +54,18 @@ export default function CourseView({ title }) {
     let q;
 
     if (selectedLevel === "all") {
-      q = query(collection(db, "courses"), orderBy("course_code", "asc")); // Fetch all courses
+      // Fetch all courses, filtered by semester
+      q = query(
+        collection(db, "courses"),
+        where("semester", "==", selectedSemester),
+        orderBy("course_code", "asc")
+      );
     } else {
+      // Fetch courses filtered by level and semester
       q = query(
         collection(db, "courses"),
         where("level", "==", selectedLevel),
+        where("semester", "==", selectedSemester),
         orderBy("course_code", "asc")
       );
     }
@@ -69,7 +79,7 @@ export default function CourseView({ title }) {
     });
 
     return () => unsubscribe();
-  }, [selectedLevel]); // Re-run when selectedLevel changes
+  }, [selectedLevel, selectedSemester]); // Re-run when selectedLevel or selectedSemester changes
 
   const handleSearch = () => {
     const filtered = courses.filter(
@@ -85,9 +95,9 @@ export default function CourseView({ title }) {
       course_code: "",
       course_name: "",
       level: selectedLevel,
-      department: "",
+      department: "All Departments", // Default to first department
       units: "",
-      semester: "",
+      semester: selectedSemester, // Default to selected semester
     });
     setIsAddModalOpen(true);
   };
@@ -153,37 +163,26 @@ export default function CourseView({ title }) {
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="text-gray-700 font-bold">Semester:</label>
+            <select
+              className="px-2 py-1 border rounded-lg"
+              value={selectedSemester}
+              onChange={(e) => {
+                const newSemester = e.target.value;
+                setSelectedSemester(newSemester);
+                sessionStorage.setItem("selectedSemester", newSemester); // Store selection
+              }}
+            >
+              {semesters.map((semester) => (
+                <option key={semester} value={semester}>
+                  {semester}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-
-        {/* <div className="flex gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Course Code"
-              className="pl-10 pr-2 py-1 border rounded-lg"
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-            />
-            <FaSearch
-              className="absolute left-3 top-2 text-gray-500 cursor-pointer"
-              onClick={handleSearch}
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Course Title"
-              className="pl-10 pr-2 py-1 border rounded-lg"
-              value={searchTitle}
-              onChange={(e) => setSearchTitle(e.target.value)}
-            />
-            <FaSearch
-              className="absolute left-3 top-2 text-gray-500 cursor-pointer"
-              onClick={handleSearch}
-            />
-          </div>
-        </div> */}
 
         <button
           className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600"
@@ -319,6 +318,7 @@ export default function CourseView({ title }) {
 
           <button
             type="submit"
+            onClick={handleAddSubmit}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg"
           >
             Add Course
@@ -438,6 +438,7 @@ export default function CourseView({ title }) {
 
             <button
               type="submit"
+              onClick={handleEditSubmit}
               className="bg-green-500 text-white px-4 py-2 rounded-lg"
             >
               Update Course

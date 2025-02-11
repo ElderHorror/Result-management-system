@@ -3,9 +3,13 @@ import { FaPlus } from "react-icons/fa"; // Import the Plus icon
 import { Link } from "react-router-dom";
 
 export default function StudentLevels({ data, title, count, view }) {
-  // State to manage the selected session
+  // State to manage the selected session and semester
   const [selectedSession, setSelectedSession] = useState(() => {
     return sessionStorage.getItem("selectedSession") || "2024-2025"; // Default session
+  });
+
+  const [selectedSemester, setSelectedSemester] = useState(() => {
+    return sessionStorage.getItem("selectedSemester") || "1st"; // Default semester
   });
 
   // Function to handle session change
@@ -13,6 +17,13 @@ export default function StudentLevels({ data, title, count, view }) {
     const newSession = e.target.value;
     setSelectedSession(newSession);
     sessionStorage.setItem("selectedSession", newSession); // Save to sessionStorage
+  };
+
+  // Function to handle semester change
+  const handleSemesterChange = (e) => {
+    const newSemester = e.target.value;
+    setSelectedSemester(newSemester);
+    sessionStorage.setItem("selectedSemester", newSemester); // Save to sessionStorage
   };
 
   return (
@@ -47,10 +58,11 @@ export default function StudentLevels({ data, title, count, view }) {
               <span className="text-gray-700 font-bold">Semester:</span>
               <select
                 className="px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                defaultValue="1" // Default selected semester
+                value={selectedSemester} // Persist semester value
+                onChange={handleSemesterChange} // Handle change
               >
-                <option value="1st">1st</option>
-                <option value="2nd">2nd</option>
+                <option value="">First</option>
+                <option value="Second">Second</option>
               </select>
             </div>
           </div>
@@ -87,10 +99,8 @@ export default function StudentLevels({ data, title, count, view }) {
                     to={view}
                     onClick={() => {
                       sessionStorage.setItem("selectedLevel", item.level); // Store level in sessionStorage
-                      sessionStorage.setItem(
-                        "selectedSession",
-                        selectedSession
-                      ); // Store selected session
+                      sessionStorage.setItem("selectedSession", selectedSession); // Store session
+                      sessionStorage.setItem("selectedSemester", selectedSemester); // Store semester
                     }}
                     className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
