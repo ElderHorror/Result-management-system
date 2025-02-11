@@ -249,16 +249,16 @@ const ResultViewTable = () => {
             console.log(`Skipping promotion for ${student.name} (400 level)`);
             return; // Skip this student
           }
-  
+
           const newLevel = (Number(student.level) + 100).toString(); // Increment level by 100
           const studentRef = doc(db, "students", student.id);
-  
+
           // Preserve existing results and initialize the new level
           const updatedResults = {
             ...student.results, // Keep all existing results
             [newLevel]: student.results[newLevel] || {}, // Initialize next level if it doesn't exist
           };
-  
+
           // Update the student's level and results
           await updateDoc(studentRef, {
             level: newLevel,
@@ -266,7 +266,7 @@ const ResultViewTable = () => {
           });
         })
       );
-  
+
       setPromotionStatus("Done ✅");
       setTimeout(() => setPromotionStatus(""), 2000); // Reset status after 2 seconds
     } catch (error) {
@@ -289,7 +289,6 @@ const ResultViewTable = () => {
           onChange={(e) => handleLevelChange(e.target.value)}
           className="border p-2 rounded"
         >
-          
           <option value="100">100</option>
           <option value="200">200</option>
           <option value="300">300</option>
@@ -414,12 +413,18 @@ const ResultViewTable = () => {
               filteredStudents.map((student) => {
                 // Get results for the selected level
                 const levelResults = student.results?.[filterLevel] || {};
-                const { totalUnits, totalPoints, GPA } = calculateGPA(levelResults);
+                const { totalUnits, totalPoints, GPA } =
+                  calculateGPA(levelResults);
 
                 return (
-                  <tr key={student.id} className="text-center hover:bg-gray-100">
+                  <tr
+                    key={student.id}
+                    className="text-center hover:bg-gray-100"
+                  >
                     <td className="border px-4 py-2">{student.name}</td>
-                    <td className="border px-4 py-2">{student.matric_number}</td>
+                    <td className="border px-4 py-2">
+                      {student.matric_number}
+                    </td>
                     <td className="border px-4 py-2">{student.department}</td>
                     <td className="border px-4 py-2">{student.level}</td>
                     {filteredCourses.map((course) => {
@@ -437,7 +442,10 @@ const ResultViewTable = () => {
                               type="number"
                               value={results[course.course_code] || ""}
                               onChange={(e) =>
-                                handleResultChange(course.course_code, e.target.value)
+                                handleResultChange(
+                                  course.course_code,
+                                  e.target.value
+                                )
                               }
                               min="0"
                               max="100"
@@ -456,9 +464,14 @@ const ResultViewTable = () => {
                       {student.CGPA ? Number(student.CGPA).toFixed(2) : "N/A"}
                     </td>
                     <td className="border px-4 py-2">
-                      {student.carryOverCourses && student.carryOverCourses.length > 0
-                        ? student.carryOverCourses.join(", ")
-                        : "None"}
+                      <div className="max-h-20 w-28 overflow-y-auto">
+                        {" "}
+                        {/* Fixed height and scrollable */}
+                        {student.carryOverCourses &&
+                        student.carryOverCourses.length > 0
+                          ? student.carryOverCourses.join(", ")
+                          : "None"}
+                      </div>
                     </td>
                     <td className="border px-4 py-2">
                       {editingStudent === student.id ? (
