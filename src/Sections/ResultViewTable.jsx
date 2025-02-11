@@ -244,15 +244,21 @@ const ResultViewTable = () => {
     try {
       await Promise.all(
         filteredStudents.map(async (student) => {
+          // Skip promotion if the student is already at 400 level
+          if (student.level === "400") {
+            console.log(`Skipping promotion for ${student.name} (400 level)`);
+            return; // Skip this student
+          }
+  
           const newLevel = (Number(student.level) + 100).toString(); // Increment level by 100
           const studentRef = doc(db, "students", student.id);
-
+  
           // Preserve existing results and initialize the new level
           const updatedResults = {
             ...student.results, // Keep all existing results
             [newLevel]: student.results[newLevel] || {}, // Initialize next level if it doesn't exist
           };
-
+  
           // Update the student's level and results
           await updateDoc(studentRef, {
             level: newLevel,
@@ -260,7 +266,7 @@ const ResultViewTable = () => {
           });
         })
       );
-
+  
       setPromotionStatus("Done ✅");
       setTimeout(() => setPromotionStatus(""), 2000); // Reset status after 2 seconds
     } catch (error) {

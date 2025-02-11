@@ -18,23 +18,24 @@ export default function StudentView({ title }) {
   const [searchMatric, setSearchMatric] = useState("");
   const [searchName, setSearchName] = useState("");
   const [selectedLevel, setSelectedLevel] = useState(() => {
-    return sessionStorage.getItem("selectedLevel") || "All"; // Default to "All"
+    const storedLevel = sessionStorage.getItem("selectedLevel");
+    return storedLevel ? storedLevel : "All"; // Ensure level is a number or "All"
   });
   const [selectedDepartment, setSelectedDepartment] = useState(
-    "All Departments"
+    sessionStorage.getItem("selectedDepartment") || "All Departments"
   );
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudent, setNewStudent] = useState({
-    level: "100", // Default level
-    department: "Computer Science", // Default department
-    modeOfEntry: "UTME", // Default mode of entry
-    suspended: "NO", // Default suspended status
-    sessionYear: "2023-2024", // Default session year
+    level: 100, // Default to number
+    department: "Computer Science",
+    modeOfEntry: "UTME",
+    suspended: "NO",
+    sessionYear: "2023-2024",
   });
   const [yearOfEntry, setYearOfEntry] = useState(() => {
-    return sessionStorage.getItem("selectedSession") || "2023-2024"; // Default session
+    return sessionStorage.getItem("selectedSession") || "2023-2024";
   });
 
   const columns = [
@@ -44,17 +45,16 @@ export default function StudentView({ title }) {
     { key: "matric_number", header: "Matric Number" },
     { key: "modeOfEntry", header: "Mode of Entry" },
     { key: "suspended", header: "Suspended" },
-    { key: "cgpa", header: "CGPA" }, // CGPA will be pulled from Firestore
+    { key: "cgpa", header: "CGPA" },
     { key: "sessionYear", header: "Year of Entry" },
   ];
 
   // Fetch students from Firebase
   useEffect(() => {
-    // Construct the Firestore query dynamically based on filters
     const conditions = [];
 
     if (selectedLevel !== "All") {
-      conditions.push(where("level", "==", selectedLevel));
+      conditions.push(where("level", "==", selectedLevel)); // Ensure level is a number
     }
 
     if (selectedDepartment !== "All Departments") {
@@ -71,26 +71,41 @@ export default function StudentView({ title }) {
         id: doc.id,
         ...doc.data(),
       }));
+      console.log("Fetched students:", studentList); // Debugging
       setStudents(studentList);
     });
 
     return () => unsubscribe();
   }, [selectedLevel, selectedDepartment, yearOfEntry]);
 
+  // Handle level change
   const handleLevelChange = (e) => {
-    setSelectedLevel(e.target.value);
-    sessionStorage.setItem("selectedLevel", e.target.value);
-    setSearchMatric(""); // Reset search input
-    setSearchName(""); // Reset search input
+    const newLevel = e.target.value === "All" ? "All" : e.target.value; // Convert to number
+    setSelectedLevel(newLevel);
+    sessionStorage.setItem("selectedLevel", newLevel.toString()); // Store as string
+    setSearchMatric("");
+    setSearchName("");
   };
 
+  // Handle department change
+  const handleDepartmentChange = (e) => {
+    const newDepartment = e.target.value;
+    setSelectedDepartment(newDepartment);
+    sessionStorage.setItem("selectedDepartment", newDepartment);
+    setSearchMatric("");
+    setSearchName("");
+  };
+
+  // Handle session change
   const handleSessionChange = (e) => {
-    setYearOfEntry(e.target.value);
-    sessionStorage.setItem("selectedSession", e.target.value);
-    setSearchMatric(""); // Reset search input
-    setSearchName(""); // Reset search input
+    const newSession = e.target.value;
+    setYearOfEntry(newSession);
+    sessionStorage.setItem("selectedSession", newSession);
+    setSearchMatric("");
+    setSearchName("");
   };
 
+  // Handle search
   const handleSearch = () => {
     const filtered = students.filter(
       (student) =>
@@ -100,40 +115,40 @@ export default function StudentView({ title }) {
     setStudents(filtered);
   };
 
+  // Handle add student
   const handleAdd = () => {
-    // Reset newStudent to default values when opening the add modal
     setNewStudent({
-      level: "100", // Default level
-      department: "Computer Science", // Default department
-      modeOfEntry: "UTME", // Default mode of entry
-      suspended: "NO", // Default suspended status
-      sessionYear: yearOfEntry, // Default session year
+      level: 100, // Default to number
+      department: "Computer Science",
+      modeOfEntry: "UTME",
+      suspended: "NO",
+      sessionYear: yearOfEntry,
     });
     setIsAddModalOpen(true);
   };
 
+  // Handle edit student
   const handleEdit = (student) => {
     setSelectedStudent(student);
     setIsEditModalOpen(true);
   };
 
+  // Handle add student submit
   const handleAddSubmit = async (e) => {
     e.preventDefault();
 
-    // Initialize the `results` field based on the student's level
-    const initialResults = {
-      [newStudent.level]: {}, // Initialize an empty object for the student's level
-    };
-
     const studentWithSession = {
       ...newStudent,
+      level: Number(newStudent.level), // Ensure level is a number
       sessionYear: yearOfEntry,
-      results: initialResults, // Add the initialized `results` field
-      cgpa: 0, // Initialize CGPA to 0
-      totalTNU: 0, // Initialize total TNU to 0
-      totalTCP: 0, // Initialize total TCP to 0
-      carryOver: "No", // Initialize carryOver status to "No"
-      carryOverCourses: [], // Initialize carryOver courses as an empty array
+      results: {
+        [newStudent.level]: {},
+      },
+      cgpa: 0,
+      totalTNU: 0,
+      totalTCP: 0,
+      carryOver: "No",
+      carryOverCourses: [],
     };
 
     try {
@@ -149,17 +164,26 @@ export default function StudentView({ title }) {
     }
   };
 
+  // Handle edit student submit
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    const studentRef = doc(db, "students", selectedStudent.id);
-    await updateDoc(studentRef, selectedStudent);
-    setStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        student.id === selectedStudent.id ? selectedStudent : student
-      )
-    );
-    setIsEditModalOpen(false);
-    setSelectedStudent(null);
+    try {
+      const updatedStudent = {
+        ...selectedStudent,
+        level: Number(selectedStudent.level), // Ensure level is a number
+      };
+      const studentRef = doc(db, "students", updatedStudent.id);
+      await updateDoc(studentRef, updatedStudent);
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.id === updatedStudent.id ? updatedStudent : student
+        )
+      );
+      setIsEditModalOpen(false);
+      setSelectedStudent(null);
+    } catch (error) {
+      console.error("Error updating student:", error);
+    }
   };
 
   // Filter students based on search inputs
@@ -177,7 +201,7 @@ export default function StudentView({ title }) {
             <label className="text-gray-700 font-bold">Level:</label>
             <select
               className="px-2 py-1 border rounded-lg"
-              value={selectedLevel}
+              value={selectedLevel === "All" ? "All" : selectedLevel.toString()} // Ensure value is a string
               onChange={handleLevelChange}
             >
               <option value="All">All Levels</option>
@@ -194,7 +218,7 @@ export default function StudentView({ title }) {
             <select
               className="px-2 py-1 border rounded-lg"
               value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
+              onChange={handleDepartmentChange}
             >
               <option value="All Departments">All Departments</option>
               <option value="Computer Science">Computer Science</option>
@@ -221,36 +245,6 @@ export default function StudentView({ title }) {
           </div>
         </div>
 
-        {/* <div className="flex gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Matric Number"
-              className="pl-10 pr-2 py-1 border rounded-lg"
-              value={searchMatric}
-              onChange={(e) => setSearchMatric(e.target.value)}
-            />
-            <FaSearch
-              className="absolute left-3 top-2 text-gray-500 cursor-pointer"
-              onClick={handleSearch}
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Student Name"
-              className="pl-10 pr-2 py-1 border rounded-lg"
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-            />
-            <FaSearch
-              className="absolute left-3 top-2 text-gray-500 cursor-pointer"
-              onClick={handleSearch}
-            />
-          </div>
-        </div> */}
-
         <button
           className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600"
           onClick={handleAdd}
@@ -261,11 +255,16 @@ export default function StudentView({ title }) {
 
       <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
         <h2 className="text-2xl font-bold text-center mb-4">{title}</h2>
-        {students.length === 0 ? ( // Check if students array is empty
-          <p className="text-center text-gray-500">
-            No students found for the selected filters.
-          </p>
-        ) : filteredStudents.length === 0 ? ( // Check if filtered students array is empty
+        {students.length === 0 ? (
+          <div className="text-center text-gray-500">
+            <p>No students found for:</p>
+            <ul className="list-disc inline-block text-left">
+              <li>Level: {selectedLevel}</li>
+              <li>Department: {selectedDepartment}</li>
+              <li>Session: {yearOfEntry}</li>
+            </ul>
+          </div>
+        ) : filteredStudents.length === 0 ? (
           <p className="text-center text-gray-500">
             No students match the search criteria.
           </p>
@@ -292,7 +291,7 @@ export default function StudentView({ title }) {
                       {col.key === "cgpa"
                         ? student.cgpa
                           ? Number(student.cgpa).toFixed(2)
-                          : "N/A" // Display CGPA from Firestore
+                          : "N/A"
                         : student[col.key]}
                     </td>
                   ))}
@@ -303,6 +302,7 @@ export default function StudentView({ title }) {
         )}
       </div>
 
+      {/* Add Student Modal */}
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
         <h2 className="text-xl font-bold mb-4">Add Student</h2>
         <form onSubmit={handleAddSubmit}>
@@ -312,9 +312,9 @@ export default function StudentView({ title }) {
               {col.key === "level" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={newStudent[col.key] || "100"} // Default to "100"
+                  value={newStudent.level || 100} // Default to 100 (number)
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                    setNewStudent({ ...newStudent, level: Number(e.target.value) }) // Convert to number
                   }
                 >
                   {[100, 200, 300, 400].map((level) => (
@@ -326,23 +326,21 @@ export default function StudentView({ title }) {
               ) : col.key === "department" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={newStudent[col.key] || "Computer Science"} // Default to "Computer Science"
+                  value={newStudent.department || "Computer Science"}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                    setNewStudent({ ...newStudent, department: e.target.value })
                   }
                 >
                   <option value="Computer Science">Computer Science</option>
-                  <option value="Software Engineering">
-                    Software Engineering
-                  </option>
+                  <option value="Software Engineering">Software Engineering</option>
                   <option value="Cyber Security">Cyber Security</option>
                 </select>
               ) : col.key === "modeOfEntry" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={newStudent[col.key] || "UTME"} // Default to "UTME"
+                  value={newStudent.modeOfEntry || "UTME"}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                    setNewStudent({ ...newStudent, modeOfEntry: e.target.value })
                   }
                 >
                   <option value="JUPEB">JUPEB</option>
@@ -352,9 +350,9 @@ export default function StudentView({ title }) {
               ) : col.key === "suspended" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={newStudent[col.key] || "NO"} // Default to "NO"
+                  value={newStudent.suspended || "NO"}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                    setNewStudent({ ...newStudent, suspended: e.target.value })
                   }
                 >
                   <option value="YES">YES</option>
@@ -363,9 +361,9 @@ export default function StudentView({ title }) {
               ) : col.key === "sessionYear" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={newStudent[col.key] || yearOfEntry} // Default to current session
+                  value={newStudent.sessionYear || yearOfEntry}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, [col.key]: e.target.value })
+                    setNewStudent({ ...newStudent, sessionYear: e.target.value })
                   }
                 >
                   <option value="2019-2020">2019/2020</option>
@@ -397,6 +395,7 @@ export default function StudentView({ title }) {
         </form>
       </Modal>
 
+      {/* Edit Student Modal */}
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
         <h2 className="text-xl font-bold mb-4">Edit Student</h2>
         <form onSubmit={handleEditSubmit}>
@@ -406,11 +405,11 @@ export default function StudentView({ title }) {
               {col.key === "level" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={selectedStudent?.[col.key] || "100"} // Default to "100"
+                  value={selectedStudent?.level || 100} // Default to 100 (number)
                   onChange={(e) =>
                     setSelectedStudent({
                       ...selectedStudent,
-                      [col.key]: e.target.value,
+                      level: Number(e.target.value), // Convert to number
                     })
                   }
                 >
@@ -423,28 +422,26 @@ export default function StudentView({ title }) {
               ) : col.key === "department" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={selectedStudent?.[col.key] || "Computer Science"} // Default to "Computer Science"
+                  value={selectedStudent?.department || "Computer Science"}
                   onChange={(e) =>
                     setSelectedStudent({
                       ...selectedStudent,
-                      [col.key]: e.target.value,
+                      department: e.target.value,
                     })
                   }
                 >
                   <option value="Computer Science">Computer Science</option>
-                  <option value="Software Engineering">
-                    Software Engineering
-                  </option>
+                  <option value="Software Engineering">Software Engineering</option>
                   <option value="Cyber Security">Cyber Security</option>
                 </select>
               ) : col.key === "modeOfEntry" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={selectedStudent?.[col.key] || "UTME"} // Default to "UTME"
+                  value={selectedStudent?.modeOfEntry || "UTME"}
                   onChange={(e) =>
                     setSelectedStudent({
                       ...selectedStudent,
-                      [col.key]: e.target.value,
+                      modeOfEntry: e.target.value,
                     })
                   }
                 >
@@ -455,11 +452,11 @@ export default function StudentView({ title }) {
               ) : col.key === "suspended" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={selectedStudent?.[col.key] || "NO"} // Default to "NO"
+                  value={selectedStudent?.suspended || "NO"}
                   onChange={(e) =>
                     setSelectedStudent({
                       ...selectedStudent,
-                      [col.key]: e.target.value,
+                      suspended: e.target.value,
                     })
                   }
                 >
@@ -469,11 +466,11 @@ export default function StudentView({ title }) {
               ) : col.key === "sessionYear" ? (
                 <select
                   className="w-full px-3 py-2 border rounded-lg"
-                  value={selectedStudent?.[col.key] || yearOfEntry} // Default to current session
+                  value={selectedStudent?.sessionYear || yearOfEntry}
                   onChange={(e) =>
                     setSelectedStudent({
                       ...selectedStudent,
-                      [col.key]: e.target.value,
+                      sessionYear: e.target.value,
                     })
                   }
                 >

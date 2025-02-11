@@ -54,7 +54,7 @@ export default function StudentLevels({ data, title, count, view }) {
             </div>
 
             {/* Semester Label and Dropdown */}
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <span className="text-gray-700 font-bold">Semester:</span>
               <select
                 className="px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -64,7 +64,7 @@ export default function StudentLevels({ data, title, count, view }) {
                 <option value="">First</option>
                 <option value="Second">Second</option>
               </select>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -86,29 +86,35 @@ export default function StudentLevels({ data, title, count, view }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
-              <tr key={index} className="text-center hover:bg-gray-100">
-                <td className="border border-gray-300 px-4 py-2">
-                  {item.level}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {item.count}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  <Link
-                    to={view}
-                    onClick={() => {
-                      sessionStorage.setItem("selectedLevel", item.level); // Store level in sessionStorage
-                      sessionStorage.setItem("selectedSession", selectedSession); // Store session
-                      sessionStorage.setItem("selectedSemester", selectedSemester); // Store semester
-                    }}
-                    className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    View
-                  </Link>
-                </td>
-              </tr>
-            ))}
+            {data.map((item, index) => {
+              // Ensure item.level is treated as a string
+              const levelString = item.level.toString();
+
+              return (
+                <tr key={index} className="text-center hover:bg-gray-100">
+                  <td className="border border-gray-300 px-4 py-2">
+                    {levelString} {/* Display level as a string */}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {item.count}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <Link
+                      to={view}
+                      onClick={() => {
+                        // Store level as a string in sessionStorage
+                        sessionStorage.setItem("selectedLevel", levelString);
+                        sessionStorage.setItem("selectedSession", selectedSession); // Store session
+                        sessionStorage.setItem("selectedSemester", selectedSemester); // Store semester
+                      }}
+                      className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
