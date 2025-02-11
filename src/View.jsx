@@ -103,7 +103,7 @@ const View = () => {
             </Link>
             <Link to="/student" className="flex flex-row gap-1 text-purple-700">
               <IoIosArrowForward size={23} className="pt-1" />
-              Student Courses
+              Students
             </Link>
           </div>
           {/* Use the StudentView component with the updated student data and columns */}
