@@ -4,7 +4,7 @@ import Header from "./Component/Header";
 import Section from "./Component/Section";
 import { IoIosArrowForward } from "react-icons/io";
 import { Link } from "react-router-dom";
-import { FaCheckCircle, FaArrowRight } from "react-icons/fa";
+import { FaCheckCircle, FaArrowRight, FaDownload } from "react-icons/fa";
 
 const App = () => {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -22,7 +22,6 @@ const App = () => {
     {
       title: "Step 1: Add Courses",
       description: [
-        // "Go to the Courses tab, select any level, and click on the Add button. Input all courses, units, and related data. This data will automatically link to the Results database for score input.",
         "Go to the <strong>Courses</strong> tab",
         "Select any level <strong>View</strong> tab",
         "Click on the <strong>Add</strong> button",
@@ -32,7 +31,6 @@ const App = () => {
         "The course added will reflect in the table",
       ],
       images: [
-        // "/courses/coursesFilled.png",
         "/courses/course-direction.png",
         "/courses/course_view.png",
         "/courses/add_modal.png",
@@ -129,6 +127,44 @@ const App = () => {
     } else {
       setIsTutorialOpen(false); // Close modal if on the first step
     }
+  };
+
+  // Function to handle downloading the documentation
+  const handleDownloadDocumentation = () => {
+    // Create a PDF blob (replace this with your actual PDF generation logic)
+    const pdfContent = `
+      Project Documentation: Academic Management System
+
+      1. Introduction
+      This documentation provides a comprehensive guide to using the Academic Management System...
+
+      2. System Overview
+      The system consists of four main modules: Courses, Lecturers, Students, and Results...
+
+      3. Step-by-Step User Guide
+      Step 1: Add Courses
+      Step 2: Add Lecturers
+      Step 3: Add Students
+      Step 4: Input Results
+
+      4. Technical Details
+      Key Features: Dynamic Data Binding, Session and Semester Filters, Automatic Calculations...
+
+      5. Conclusion
+      The Academic Management System is a robust and user-friendly platform...
+    `;
+
+    const blob = new Blob([pdfContent], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary anchor element to trigger the download
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Academic_Management_System_Documentation.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -243,13 +279,21 @@ const App = () => {
               >
                 Prev
               </button>
-              <button
-                onClick={handleNextStep}
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-300 flex items-center gap-2"
-              >
-                {currentStep === steps.length ? "Finish" : "Next"}
-                {currentStep < steps.length && <FaArrowRight />}
-              </button>
+              {currentStep === steps.length ? (
+                <button
+                  onClick={handleDownloadDocumentation}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-300 flex items-center gap-2"
+                >
+                  <FaDownload /> Download Documentation
+                </button>
+              ) : (
+                <button
+                  onClick={handleNextStep}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-300 flex items-center gap-2"
+                >
+                  Next <FaArrowRight />
+                </button>
+              )}
             </div>
           </div>
         </div>
